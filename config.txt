@@ -1,0 +1,19 @@
+######################################################
+# PLEASE CHANGE FOLLOWING CONFIGS ####################
+Twitch_Channel          = xxx_target_channel_name_xxx
+
+Trans_Username          = xxx_trans_user_name_xxx
+Trans_OAUTH             = xxxx_oauth_for_trans_user_xxxx
+
+#######################################################
+# OPTIONAL CONFIGS ####################################
+lang_TransToHome        = ja
+lang_HomeToOther        = en
+
+Ignore_Users            = Nightbot, BikuBikuTest
+Ignore_Line             = http, BikuBikuTest
+Delete_Words            = saatanNooBow, BikuBikuTest
+
+# Any emvironment, set it to `True`, then text will be read by TTS voice!
+gTTS                    = True
+
