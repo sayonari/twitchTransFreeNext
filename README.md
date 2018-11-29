@@ -51,7 +51,9 @@ gTTS                    = True
 https://cloud.google.com/translate/docs/languages
 
 # Developer Info.
-|Title | Automatic Translator for Twitch Chat (Next Generation) |
-|Developer | husband_sayonari_omega
+
+| Title | Automatic Translator for Twitch Chat (Next Generation) |
+|--|--|
+| Developer | husband_sayonari_omega |
 |github | https://github.com/sayonari/twitchTransFreeNext |
 | mail | sayonari@gmail.com |
