@@ -7,6 +7,9 @@ Trans_OAUTH             = xxxx_oauth_for_trans_user_xxxx
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
+Trans_TextColor         = GoldenRod
+# Blue, Coral, DodgerBlue, SpringGreen, YellowGreen, Green, OrangeRed, Red, GoldenRod, HotPink, CadetBlue, SeaGreen, Chocolate, BlueViolet, and Firebrick
+
 lang_TransToHome        = ja
 lang_HomeToOther        = en
 
@@ -16,4 +19,3 @@ Delete_Words            = saatanNooBow, BikuBikuTest
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 gTTS                    = True
-

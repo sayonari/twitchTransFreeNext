@@ -16,9 +16,11 @@ import warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-version = '2.0.4'
+version = '2.0.5'
 '''
-v2.3.4  : 
+v2.0.6  : テキストの色変更
+v2.0.5  : 裏技「翻訳先言語選択機能」実装 
+v2.0.4  : 
 v2.0.3  : いろいろ実装した
 '''
 
@@ -54,9 +56,16 @@ sound_queue = queue.Queue()
 # configure for Google TTS & play
 TMP_DIR = './tmp/'
 
+TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
+                "hr", "cs", "da", "nl", "en", "eo", "et", "tl", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha",
+                "haw", "iw", "hi", "hmn", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky",
+                "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ps", "fa",
+                "pl", "pt", "ma", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw",
+                "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
+
 # config keys
 config = {'Twitch_Channel':'',
-          'Trans_Username':'', 'Trans_OAUTH':'',
+          'Trans_Username':'', 'Trans_OAUTH':'', 'Trans_TextColor':'',
           'lang_TransToHome':'','lang_HomeToOther':'',
           'Ignore_Users': '', 'Ignore_Line':'', 'Delete_Words':'',
           'gTTS':''}
@@ -83,8 +92,8 @@ for l in lines:
 
 f.close()
 
-# fix some config bugs ##########
-
+###################################
+# fix some config errors ##########
 # remove "#" mark ------
 if config['Twitch_Channel'].startswith('#'):
     print("Find # mark at channel name! I remove '#' from 'config:Twitch_Channel'")
@@ -109,7 +118,6 @@ Ignore_Line = [x.strip() for x in config['Ignore_Line'].split(',')]
 
 # 無視単語リストの準備 ################
 Delete_Words = [x.strip() for x in config['Delete_Words'].split(',')]
-
 
 
 ####################################################
@@ -145,16 +153,12 @@ class MyOwnBot(TwitchIrc):
         in_text = message
         print(in_text)
 
-        ################################
         # !sound 効果音再生 --------------
         if re.match('^\!sound ', in_text):
             sound_name = in_text.strip().split(" ")[1]
             sound_queue.put(sound_name)
             return
 
-
-
-        #################################
         # 言語検出 -----------------------
         lang_detect = ''
         try:
@@ -162,13 +166,21 @@ class MyOwnBot(TwitchIrc):
         except:
             pass
 
+        # 翻訳先言語の選択 ---------------
+        lang_dest = config['lang_TransToHome'] if lang_detect != config['lang_TransToHome'] else config['lang_HomeToOther']
+
+        # 翻訳先言語が文中で指定されてたら変更 -------
+        match = re.match('(.{2,5}?):', in_text)
+        if match and match.group(1) in TargetLangs:
+            lang_dest = match.group(1)
+            in_text = ''.join(in_text.split(':')[1:])
+        else:
+            pass
+
         # 音声合成（入力文） --------------
         if config['gTTS'] == 'True': gTTS_queue.put([in_text, lang_detect])
 
         ################################
-        # 翻訳先言語の選択 ---------------
-        lang_dest = config['lang_TransToHome'] if lang_detect != config['lang_TransToHome'] else config['lang_HomeToOther']
-
         # 翻訳 --------------------------
         try:
             translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
@@ -176,7 +188,7 @@ class MyOwnBot(TwitchIrc):
             pass
 
         out_text = '{} [by {}] ({} > {})'.format(translatedText, user, lang_detect, lang_dest)
-        self.message(channel, out_text)
+        self.message(channel, '/me ' + out_text)
         print(out_text)
 
         # 音声合成（出力文） --------------
@@ -249,6 +261,12 @@ thread_sound = threading.Thread(target=sound_play)
 thread_sound.start()
 
 # Twitch IRC 接続開始 ################
+# 接続 ---------------
 client = MyOwnBot(config['Trans_Username'], config['Trans_OAUTH']).start()
+
+# Transユーザの色変更 --
+client.message('#' + config["Twitch_Channel"], '/color ' + config["Trans_TextColor"])
+
+# 無限ループ -----------
 client.handle_forever()
 
