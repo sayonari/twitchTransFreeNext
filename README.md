@@ -56,7 +56,7 @@ https://cloud.google.com/translate/docs/languages
 
 # secret functions
 ## choose trans destination language (for one text)
-At the time of translation, you can select the target language like `en:` at the beginning of the sentence.
+At the time of translation, you can select the target language like `en:` at the beginning of the sentence.  
 Example) ru: Hello -> привет там
 
 # Developer Info.
