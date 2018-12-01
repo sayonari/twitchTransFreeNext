@@ -23,6 +23,9 @@ Trans_OAUTH             = xxxx_oauth_for_trans_user_xxxx
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
+Trans_TextColor         = GoldenRod
+# Blue, Coral, DodgerBlue, SpringGreen, YellowGreen, Green, OrangeRed, Red, GoldenRod, HotPink, CadetBlue, SeaGreen, Chocolate, BlueViolet, and Firebrick
+
 lang_TransToHome        = ja
 lang_HomeToOther        = en
 
@@ -39,6 +42,7 @@ gTTS                    = True
 | Twitch_Channel | The target chat room for translation. |
 | Trans_Username | username for translation |
 | Trans_OAUTH | Get key for Trans_Username at https://twitchapps.com/tmi/ |
+| Trans_TextColor  | You can change text color of translator. |
 | lang_TransToHome | If set it to [`ja`], all texts will be translated to the JAPANESE! |
 | lang_HomeToOther | If set it to [`en`], the language in [`lang_TransToHome`] is trans to [`en`]. |
 | Ignore_Users | You can set some users : [Nightbot, BikuBikuTest, someotheruser, ...] |
@@ -49,6 +53,11 @@ gTTS                    = True
 # memo
 ## support language (google translator)
 https://cloud.google.com/translate/docs/languages
+
+# secret functions
+## choose trans destination language (for one text)
+At the time of translation, you can select the target language like `en:` at the beginning of the sentence.
+Example) ru: Hello -> привет там
 
 # Developer Info.
 
