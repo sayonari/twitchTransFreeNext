@@ -19,3 +19,10 @@ Delete_Words            = saatanNooBow, BikuBikuTest
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 gTTS                    = True
+
+
+#######################################################
+# For TLANSLATE ROOM CONFIGS ##########################
+##### channelID <- owner_id, roomUUID <- _id ##########
+# channelID               = 000000000
+# roomUUID                = 00000000-0000-0000-0000-000000000000

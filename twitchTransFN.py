@@ -16,8 +16,9 @@ import warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-version = '2.0.5'
+version = '2.0.7'
 '''
+v2.0.7  : チャット内の別ルームを指定して，そこに翻訳結果を書く
 v2.0.6  : テキストの色変更
 v2.0.5  : 裏技「翻訳先言語選択機能」実装 
 v2.0.4  : 
@@ -68,7 +69,8 @@ config = {'Twitch_Channel':'',
           'Trans_Username':'', 'Trans_OAUTH':'', 'Trans_TextColor':'',
           'lang_TransToHome':'','lang_HomeToOther':'',
           'Ignore_Users': '', 'Ignore_Line':'', 'Delete_Words':'',
-          'gTTS':''}
+          'gTTS':'',
+          'channelID':'','roomUUID':''}
 
 ##########################################
 # load config text #######################
@@ -182,13 +184,22 @@ class MyOwnBot(TwitchIrc):
 
         ################################
         # 翻訳 --------------------------
+        translatedText = ''
         try:
             translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
         except:
             pass
 
+        # チャットへの投稿 ----------------
+        # 投稿先選択（標準のチャンネルか，別ルームか）
+        out_channel = '{}:{}:{}'.format("#chatrooms", config["channelID"], config["roomUUID"]) if config['channelID'] else channel
+
+        # 投稿内容整形 & 投稿
         out_text = '{} [by {}] ({} > {})'.format(translatedText, user, lang_detect, lang_dest)
-        self.message(channel, '/me ' + out_text)
+        self.message(out_channel, '/me ' + out_text)
+
+
+        # コンソールへの表示 --------------
         print(out_text)
 
         # 音声合成（出力文） --------------

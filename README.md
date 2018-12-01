@@ -35,6 +35,13 @@ Delete_Words            = saatanNooBow, BikuBikuTest
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 gTTS                    = True
+
+
+#######################################################
+# For TLANSLATE ROOM CONFIGS ##########################
+##### channelID <- owner_id, roomUUID <- _id ##########
+# channelID               = 000000000
+# roomUUID                = 00000000-0000-0000-0000-000000000000
 ```
 
 | Option| Description |
@@ -49,6 +56,8 @@ gTTS                    = True
 | Ignore_Line | If the words are in message, the message will be ignored.|
 | Delete_Words | The words will be removed from message. |
 | gTTS | Any emvironment, text will be read by TTS voice! |
+| channelID | (with roomUUID) translated text is send to chat-room |
+| roomUUID | (with channelID) translated text is send to chat-room |
 
 # memo
 ## support language (google translator)
@@ -59,6 +68,35 @@ https://cloud.google.com/translate/docs/languages
 At the time of translation, you can select the target language like `en:` at the beginning of the sentence.  
 Example) ru: Hello -> привет там
 
+## translated text is send to chat-room
+If you want to send the translated text to chat-room in your channel, please read this section.
+You can get more information about [chat-room] following blogs.
+https://blog.twitch.tv/bring-your-community-together-with-rooms-ad60cab1af0a
+
+1. Make chat-room in your channel.
+2. By using `roomUUID_checker.exe`, get `channelID(owner_id)` and `roomUUID(_id)`
+3. Set it to config.txt
+
+NOTE: When rewriting config.txt, please delete the `#` mark at the beginning of each setting value!
+
+
+# Thanks
+Thanks to Pioneers!
+The developer of ...
+- Google
+- googletrans by ssut
+    - https://github.com/ssut/py-googletrans
+- gtts by pndurette
+    - https://github.com/pndurette/gTTS
+- playsound by TaylorSMarks
+    - https://github.com/TaylorSMarks/playsound
+- python_twitch_irc by jspaulsen
+    - https://github.com/jspaulsen/python-twitch-irc
+
+and Fix some bugs ...
+- gTTS-token by Boudewijn26
+- googletrans/gtoken by michaeldegroot/cats-blender-plugin
+
 # Developer Info.
 
 | Title | Automatic Translator for Twitch Chat (Next Generation) |
@@ -66,3 +104,4 @@ Example) ru: Hello -> привет там
 | Developer | husband_sayonari_omega |
 |github | https://github.com/sayonari/twitchTransFreeNext |
 | mail | sayonari@gmail.com |
+| Twitter | [sayonari](https://twitter.com/sayonari) |
