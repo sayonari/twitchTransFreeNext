@@ -24,9 +24,9 @@ http://twitch.tv/saatan_pion/
 Softwware: twitchTransFreeNext  
 https://github.com/sayonari/twitchTransFreeNext
 
-紹介用の絵も頂いちゃいました．使ってください．
-![trans_anomon](https://user-images.githubusercontent.com/16011609/49361210-c1f5ef80-f71e-11e8-8cff-6fd760e8738a.png)
-Painted by anomon
+紹介用の絵も頂いちゃいました．使ってください．  
+![trans_anomon](https://user-images.githubusercontent.com/16011609/49361210-c1f5ef80-f71e-11e8-8cff-6fd760e8738a.png)  
+Painted by anomon  
 https://www.twitch.tv/anomomm
 
 # config.txt
