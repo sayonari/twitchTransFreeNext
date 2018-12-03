@@ -12,6 +12,23 @@ This software is made for my wife!
 http://twitch.tv/saatan_pion/  
 If you are satisfied by this software, please watch my wife's stream! We are waiting for comming you! and subscribe! donation!
 
+# Please link from your page!
+プログラム使うときには，twitchページからリンクを張ってくれたら嬉しいです！（強制ではないです）
+
+さぁたんチャンネルと，翻訳ちゃんのページにリンクを貼っていただけると良いですが，紹介文は各自で考えてくださいρ
+
+[example]  
+Twitch: saatan  
+http://twitch.tv/saatan_pion/ 
+
+Softwware: twitchTransFreeNext  
+https://github.com/sayonari/twitchTransFreeNext
+
+紹介用の絵も頂いちゃいました．使ってください．
+![trans_anomon](https://user-images.githubusercontent.com/16011609/49361210-c1f5ef80-f71e-11e8-8cff-6fd760e8738a.png)
+Painted by anomon
+https://www.twitch.tv/anomomm
+
 # config.txt
 ```
 ######################################################
