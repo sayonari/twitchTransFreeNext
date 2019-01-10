@@ -16,8 +16,9 @@ import warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-version = '2.0.7'
+version = '2.0.8'
 '''
+v2.0.8  : オプション「無視する言語」「Show_ByName」「Show_ByLang」追加
 v2.0.7  : チャット内の別ルームを指定して，そこに翻訳結果を書く
 v2.0.6  : テキストの色変更
 v2.0.5  : 裏技「翻訳先言語選択機能」実装 
@@ -68,6 +69,8 @@ TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg",
 config = {'Twitch_Channel':'',
           'Trans_Username':'', 'Trans_OAUTH':'', 'Trans_TextColor':'',
           'lang_TransToHome':'','lang_HomeToOther':'',
+          'Show_ByName': '','Show_ByLang': '',
+          'Ignore_Lang': '',
           'Ignore_Users': '', 'Ignore_Line':'', 'Delete_Words':'',
           'gTTS':'',
           'channelID':'','roomUUID':''}
@@ -107,7 +110,8 @@ if config['Trans_OAUTH'].startswith('oauth:'):
     config["Trans_OAUTH"] = config["Trans_OAUTH"][6:]
 
 
-
+# 無視言語リストの準備 ################
+Ignore_Lang = [x.strip() for x in config['Ignore_Lang'].split(',')]
 
 # 無視ユーザリストの準備 ################
 Ignore_Users = [x.strip() for x in config['Ignore_Users'].split(',')]
@@ -168,6 +172,10 @@ class MyOwnBot(TwitchIrc):
         except:
             pass
 
+        # 無視対象言語だったら無視 ---------
+        if lang_detect in Ignore_Lang:
+            return
+
         # 翻訳先言語の選択 ---------------
         lang_dest = config['lang_TransToHome'] if lang_detect != config['lang_TransToHome'] else config['lang_HomeToOther']
 
@@ -195,7 +203,11 @@ class MyOwnBot(TwitchIrc):
         out_channel = '{}:{}:{}'.format("#chatrooms", config["channelID"], config["roomUUID"]) if config['channelID'] else channel
 
         # 投稿内容整形 & 投稿
-        out_text = '{} [by {}] ({} > {})'.format(translatedText, user, lang_detect, lang_dest)
+        out_text = translatedText
+        if config['Show_ByName'] == 'True':
+            out_text = '{} [by {}]'.format(out_text, user)            
+        if config['Show_ByLang'] == 'True':
+            out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
         self.message(out_channel, '/me ' + out_text)
 
 
