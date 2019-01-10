@@ -46,6 +46,10 @@ Trans_TextColor         = GoldenRod
 lang_TransToHome        = ja
 lang_HomeToOther        = en
 
+Show_ByName             = True
+Show_ByLang             = True
+
+Ignore_Lang             = 
 Ignore_Users            = Nightbot, BikuBikuTest
 Ignore_Line             = http, BikuBikuTest
 Delete_Words            = saatanNooBow, BikuBikuTest
@@ -69,12 +73,16 @@ gTTS                    = True
 | Trans_TextColor  | You can change text color of translator. |
 | lang_TransToHome | If set it to [`ja`], all texts will be translated to the JAPANESE! |
 | lang_HomeToOther | If set it to [`en`], the language in [`lang_TransToHome`] is trans to [`en`]. |
+| Show_ByName | If it is set to `True`, user name is shown after translated text. |
+| Show_ByLang | If it is set to `True`, the source language is shown after translated text. |
+| Ignore_Lang | You can set some languages : [ja,en, ...] |
 | Ignore_Users | You can set some users : [Nightbot, BikuBikuTest, someotheruser, ...] |
 | Ignore_Line | If the words are in message, the message will be ignored.|
 | Delete_Words | The words will be removed from message. |
 | gTTS | Any emvironment, text will be read by TTS voice! |
 | channelID | (with roomUUID) translated text is send to chat-room |
 | roomUUID | (with channelID) translated text is send to chat-room |
+
 
 # memo
 ## support language (google translator)

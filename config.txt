@@ -13,6 +13,10 @@ Trans_TextColor         = GoldenRod
 lang_TransToHome        = ja
 lang_HomeToOther        = en
 
+Show_ByName             = True
+Show_ByLang             = True
+
+Ignore_Lang             = 
 Ignore_Users            = Nightbot, BikuBikuTest
 Ignore_Line             = http, BikuBikuTest
 Delete_Words            = saatanNooBow, BikuBikuTest
