@@ -12,6 +12,11 @@ This software is made for my wife!
 http://twitch.tv/saatan_pion/  
 If you are satisfied by this software, please watch my wife's stream! We are waiting for comming you! and subscribe! donation!
 
+# We welcome your DONATE!!!!
+Donation is possible from the following link!
+もし便利だなと思ったら．以下からDONATEしてください．開発中に食べるお菓子代にします！！！
+https://twitch.streamlabs.com/saatan_pion#/
+
 # Please link from your page!
 プログラム使うときには，twitchページからリンクを張ってくれたら嬉しいです！（強制ではないです）
 
