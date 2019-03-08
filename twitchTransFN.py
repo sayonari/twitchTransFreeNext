@@ -99,6 +99,10 @@ f.close()
 
 ###################################
 # fix some config errors ##########
+# lowercase channel and username ------
+config['Twitch_Channel'] = config['Twitch_Channel'].lower()
+config['Trans_Username'] = config['Trans_Username'].lower()
+
 # remove "#" mark ------
 if config['Twitch_Channel'].startswith('#'):
     print("Find # mark at channel name! I remove '#' from 'config:Twitch_Channel'")
@@ -292,4 +296,3 @@ client.message('#' + config["Twitch_Channel"], '/color ' + config["Trans_TextCol
 
 # 無限ループ -----------
 client.handle_forever()
-
