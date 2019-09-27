@@ -2,13 +2,10 @@
 Next Generation of twitchTransFree!!!!
 
 # USAGE
-## Windows User
 1. rewrite `config.txt`
 2. double-click `twitchTransFN.exe`
 
-## Non-Windows User
-1. `pip install -r requirements.txt`
-2. `python twitchTransFN.py`
+That's all!
 
 # I support my wife 24/7 :-) 
 This software is made for my wife!  

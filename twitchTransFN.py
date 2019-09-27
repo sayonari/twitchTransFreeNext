@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from googletrans import Translator
 from gtts import gTTS
 from playsound import playsound

@@ -1,3 +1,0 @@
-googletrans==2.4.0
-gTTS==2.0.3
-playsound==1.2.2
