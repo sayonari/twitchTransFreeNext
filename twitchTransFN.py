@@ -16,9 +16,8 @@ import warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-version = '2.0.9'
+version = '2.0.8'
 '''
-v2.0.9  : logを残すようにした．
 v2.0.8  : オプション「無視する言語」「Show_ByName」「Show_ByLang」追加
 v2.0.7  : チャット内の別ルームを指定して，そこに翻訳結果を書く
 v2.0.6  : テキストの色変更
@@ -56,8 +55,6 @@ translator = Translator()
 gTTS_queue = queue.Queue()
 sound_queue = queue.Queue()
 
-LOG_DIR = './log/'
-
 # configure for Google TTS & play
 TMP_DIR = './tmp/'
 
@@ -79,22 +76,6 @@ config = {'Twitch_Channel':'',
           'channelID':'','roomUUID':''}
 
 ##########################################
-
-# print to monitor & logfile #############
-def print_log(fp,t):
-    print(t)
-    fp.write(t + '\n')
-    fp.flush()
-
-# LOGディレクトリ作成 ----
-if not os.path.exists(LOG_DIR):
-    os.mkdir(LOG_DIR)
-
-STARTTIME = datetime.now()
-START_DATE = STARTTIME.strftime("%Y%m%d_%H%M%S")
-log_file = open(LOG_DIR + "dialog_log_" + START_DATE + ".txt", 'w')
-
-
 # load config text #######################
 readfile = 'config.txt'
 f = open(readfile, 'r')
@@ -109,12 +90,12 @@ for l in lines:
     if conf_line[0].strip() in config.keys():
         config[conf_line[0].strip()] = conf_line[1].strip()
     else:
-        print_log(log_file, "ERROR: " + conf_line[0].strip() + " is can't use in config.txt [line " + str(cnt) + "]! please check it.")
+        print(
+            "ERROR: " + conf_line[0].strip() + " is can't use in config.txt [line " + str(cnt) + "]! please check it.")
         exit()
     cnt = cnt + 1
 
 f.close()
-
 
 ###################################
 # fix some config errors ##########
@@ -124,13 +105,12 @@ config['Trans_Username'] = config['Trans_Username'].lower()
 
 # remove "#" mark ------
 if config['Twitch_Channel'].startswith('#'):
-    print_log(log_file, "Find # mark at channel name! I remove '#' from 'config:Twitch_Channel'")
-
+    print("Find # mark at channel name! I remove '#' from 'config:Twitch_Channel'")
     config["Twitch_Channel"] = config["Twitch_Channel"][1:]
 
 # remove "oauth:" mark ------
 if config['Trans_OAUTH'].startswith('oauth:'):
-    print_log(log_file, "Find 'oauth:' at OAUTH text! I remove 'oauth:' from 'config:Trans_OAUTH'")
+    print("Find 'oauth:' at OAUTH text! I remove 'oauth:' from 'config:Trans_OAUTH'")
     config["Trans_OAUTH"] = config["Trans_OAUTH"][6:]
 
 
@@ -165,7 +145,7 @@ class MyOwnBot(TwitchIrc):
     # Override from base class
     def on_message(self, timestamp, tags, channel, user, message):
         # 無視ユーザリストチェック -------------
-        print_log(log_file, 'USER:{}'.format(user))
+        print('USER:{}'.format(user))
         if user in Ignore_Users:
             return
 
@@ -181,7 +161,7 @@ class MyOwnBot(TwitchIrc):
         ################################
         # 入力 --------------------------
         in_text = message
-        print_log(log_file, in_text)
+        print(in_text)
 
         # !sound 効果音再生 --------------
         if re.match('^\!sound ', in_text):
@@ -236,13 +216,12 @@ class MyOwnBot(TwitchIrc):
 
 
         # コンソールへの表示 --------------
-        print_log(log_file, out_text)
+        print(out_text)
 
         # 音声合成（出力文） --------------
         if config['gTTS'] == 'True': gTTS_queue.put([translatedText, lang_dest])
 
-        print_log(log_file, '')
-
+        print()
 
 
 #####################################
@@ -260,14 +239,13 @@ def gTTS_play():
             try:
                 tts = gTTS(text, lang=tl)
                 tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
-                if Debug: print_log(log_file, 'gTTS file: {}'.format(tts_file))
+                if Debug: print('gTTS file: {}'.format(tts_file))
                 tts.save(tts_file)
                 playsound(tts_file, True)
                 os.remove(tts_file)
             except Exception as e:
-                print_log(log_file, 'gTTS error: 音声合成できないね．')
-
-                if Debug: print_log(log_file, e.args)
+                print('gTTS error: 音声合成できないね．')
+                if Debug: print(e.args)
 
 #####################################
 # !sound 音声再生スレッド -------------
@@ -282,17 +260,16 @@ def sound_play():
             try:
                 playsound('./sound/{}.mp3'.format(q), True)
             except Exception as e:
-                print_log(log_file, 'sound error: [!sound]コマンドの再生できないね．')
-                if Debug: print_log(log_file, e.args)
+                print('sound error: [!sound]コマンドの再生できないね．')
+                if Debug: print(e.args)
 
 
 
 # メイン処理 ###########################
 # 初期表示 -----------------------
-print_log(log_file, 'twitchTransFreeNext (Version: {})'.format(version))
-print_log(log_file, 'Connect to the channel   : {}'.format(config['Twitch_Channel']))
-print_log(log_file, 'Translator Username      : {}'.format(config['Trans_Username']))
-
+print('翻訳ちゃん twitchTransFreeNext (Version: {})'.format(version))
+print('Connect to the channel   : {}'.format(config['Twitch_Channel']))
+print('Translator Username      : {}'.format(config['Trans_Username']))
 
 # 作業用ディレクトリ削除 ＆ 作成 ----
 if os.path.exists(TMP_DIR):
