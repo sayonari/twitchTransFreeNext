@@ -18,11 +18,13 @@ Show_ByLang             = True
 
 Ignore_Lang             = 
 Ignore_Users            = Nightbot, BikuBikuTest
-Ignore_Line             = http, BikuBikuTest
+Ignore_Line             = http, BikuBikuTest, 888, ８８８
 Delete_Words            = saatanNooBow, BikuBikuTest
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
-gTTS                    = True
+# gTTS_In:User Input Text, gTTS_Out:Bot Output Text
+gTTS_In                 = True
+gTTS_Out                = True
 
 
 #######################################################

@@ -16,9 +16,10 @@ import warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-version = '2.0.8'
+version = '2.0.10'
 '''
-v2.0.8  : オプション「無視する言語」「Show_ByName」「Show_ByLang」追加
+v2.0.10 : オプション gTTS を gTTS_In, gTTS_Out に分割
+v2.0.8  : オプション「無視する言語」「Show_ByName」「Show_ByLang」追加`
 v2.0.7  : チャット内の別ルームを指定して，そこに翻訳結果を書く
 v2.0.6  : テキストの色変更
 v2.0.5  : 裏技「翻訳先言語選択機能」実装 
@@ -72,13 +73,13 @@ config = {'Twitch_Channel':'',
           'Show_ByName': '','Show_ByLang': '',
           'Ignore_Lang': '',
           'Ignore_Users': '', 'Ignore_Line':'', 'Delete_Words':'',
-          'gTTS':'',
+          'gTTS_In':'', 'gTTS_Out':'',
           'channelID':'','roomUUID':''}
 
 ##########################################
 # load config text #######################
 readfile = 'config.txt'
-f = open(readfile, 'r')
+f = open(readfile, 'r', encoding='utf-8_sig')
 lines = f.readlines()
 
 cnt = 1
@@ -192,7 +193,7 @@ class MyOwnBot(TwitchIrc):
             pass
 
         # 音声合成（入力文） --------------
-        if config['gTTS'] == 'True': gTTS_queue.put([in_text, lang_detect])
+        if config['gTTS_In'] == 'True': gTTS_queue.put([in_text, lang_detect])
 
         ################################
         # 翻訳 --------------------------
@@ -219,7 +220,7 @@ class MyOwnBot(TwitchIrc):
         print(out_text)
 
         # 音声合成（出力文） --------------
-        if config['gTTS'] == 'True': gTTS_queue.put([translatedText, lang_dest])
+        if config['gTTS_Out'] == 'True': gTTS_queue.put([translatedText, lang_dest])
 
         print()
 
@@ -279,7 +280,7 @@ if os.path.exists(TMP_DIR):
 os.mkdir(TMP_DIR)
 
 # 音声合成スレッド起動 ################
-if config['gTTS'] == 'True':
+if config['gTTS_In'] == 'True' or  config['gTTS_Out'] == 'True':
     thread_gTTS = threading.Thread(target=gTTS_play)
     thread_gTTS.start()
 

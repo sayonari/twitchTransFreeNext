@@ -56,11 +56,13 @@ Show_ByLang             = True
 
 Ignore_Lang             = 
 Ignore_Users            = Nightbot, BikuBikuTest
-Ignore_Line             = http, BikuBikuTest
+Ignore_Line             = http, BikuBikuTest, 888, ８８８
 Delete_Words            = saatanNooBow, BikuBikuTest
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
-gTTS                    = True
+# gTTS_In:User Input Text, gTTS_Out:Bot Output Text
+gTTS_In                 = True
+gTTS_Out                = True
 
 
 #######################################################
@@ -84,7 +86,8 @@ gTTS                    = True
 | Ignore_Users | You can set some users : [Nightbot, BikuBikuTest, someotheruser, ...] |
 | Ignore_Line | If the words are in message, the message will be ignored.|
 | Delete_Words | The words will be removed from message. |
-| gTTS | Any emvironment, text will be read by TTS voice! |
+| gTTS | Input text will be read by TTS voice! |
+| gTTS | Bot output text will be read by TTS voice! |
 | channelID | (with roomUUID) translated text is send to chat-room |
 | roomUUID | (with channelID) translated text is send to chat-room |
 
