@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from googletrans import Translator
 from gtts import gTTS
 from playsound import playsound
@@ -12,12 +15,15 @@ import re
 from python_twitch_irc import TwitchIrc
 
 import sys
+from sys import exit
+
 import warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
-version = '2.0.10'
+version = '2.0.10.2'
 '''
+v2.0.10 : python コードの文字コードをUTF-8と指定
 v2.0.10 : オプション gTTS を gTTS_In, gTTS_Out に分割
 v2.0.8  : オプション「無視する言語」「Show_ByName」「Show_ByLang」追加`
 v2.0.7  : チャット内の別ルームを指定して，そこに翻訳結果を書く
@@ -91,9 +97,8 @@ for l in lines:
     if conf_line[0].strip() in config.keys():
         config[conf_line[0].strip()] = conf_line[1].strip()
     else:
-        print(
-            "ERROR: " + conf_line[0].strip() + " is can't use in config.txt [line " + str(cnt) + "]! please check it.")
-        exit()
+        print("ERROR: " + conf_line[0].strip() + " is can't use in config.txt [line " + str(cnt) + "]! please check it.")
+        exit(0)
     cnt = cnt + 1
 
 f.close()
