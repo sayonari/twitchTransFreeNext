@@ -12,17 +12,22 @@ import time
 import shutil
 import re
 
-from python_twitch_irc import TwitchIrc
+import asyncio
+
+# from python_twitch_irc import TwitchIrc
+from twitchio.ext import commands
 
 import sys
 from sys import exit
+import signal
 
-import warnings
-if not sys.warnoptions:
-    warnings.simplefilter("ignore")
+# import warnings
+# if not sys.warnoptions:
+#     warnings.simplefilter("ignore")
 
-version = '2.0.10.2'
+version = '2.0.11'
 '''
+v2.0.11 : gTTSアップデート＆twitch接続モジュール変更＆色々修正
 v2.0.10 : python コードの文字コードをUTF-8と指定
 v2.0.10 : オプション gTTS を gTTS_In, gTTS_Out に分割
 v2.0.8  : オプション「無視する言語」「Show_ByName」「Show_ByLang」追加`
@@ -33,24 +38,6 @@ v2.0.4  :
 v2.0.3  : いろいろ実装した
 '''
 
-'''
-Thanks to Pioneers!
-The developer of ...
-- Google
-- googletrans by ssut
-    - https://github.com/ssut/py-googletrans
-- gtts by pndurette
-    - https://github.com/pndurette/gTTS
-- playsound by TaylorSMarks
-    - https://github.com/TaylorSMarks/playsound
-- python_twitch_irc by jspaulsen
-    - https://github.com/jspaulsen/python-twitch-irc
-
-and Fix some bugs ...
-- gTTS-token by Boudewijn26
-- googletrans/gtoken by michaeldegroot/cats-blender-plugin
-
-'''
 
 # 設定 ###############################
 Debug = False
@@ -80,6 +67,7 @@ config = {'Twitch_Channel':'',
           'Ignore_Lang': '',
           'Ignore_Users': '', 'Ignore_Line':'', 'Delete_Words':'',
           'gTTS_In':'', 'gTTS_Out':'',
+          'TooLong_Cut':'',
           'channelID':'','roomUUID':''}
 
 ##########################################
@@ -88,8 +76,9 @@ readfile = 'config.txt'
 f = open(readfile, 'r', encoding='utf-8_sig')
 lines = f.readlines()
 
-cnt = 1
+cnt = 0
 for l in lines:
+    cnt = cnt + 1
     if l.find("#") == 0 or l.strip() == "":
         continue
 
@@ -99,7 +88,7 @@ for l in lines:
     else:
         print("ERROR: " + conf_line[0].strip() + " is can't use in config.txt [line " + str(cnt) + "]! please check it.")
         exit(0)
-    cnt = cnt + 1
+
 
 f.close()
 
@@ -139,95 +128,134 @@ Delete_Words = [x.strip() for x in config['Delete_Words'].split(',')]
 ####################################################
 #####################################
 # Simple echo bot.
-class MyOwnBot(TwitchIrc):
-    def on_connect(self):
-         self.join('#{}'.format(config['Twitch_Channel']))
+bot = commands.Bot(
+    irc_token           = "oauth:" + config["Trans_OAUTH"],
+    client_id           = "",
+    nick                = config['Trans_Username'],
+    prefix              = "!",
+    initial_channels    = [config['Twitch_Channel']]
+)
 
-    ##########################################
-    # メイン動作 ##############################
-    ##########################################
+##########################################
+# メイン動作 ##############################
+##########################################
 
-    # メッセージを受信したら ####################
-    # Override from base class
-    def on_message(self, timestamp, tags, channel, user, message):
-        # 無視ユーザリストチェック -------------
-        print('USER:{}'.format(user))
-        if user in Ignore_Users:
+# 起動時 ####################
+@bot.event
+async def event_ready():
+    'Called once when the bot goes online.'
+    print(f"{config['Trans_Username']} is online!")
+    ws = bot._ws  # this is only needed to send messages within event_ready
+    await ws.send_privmsg(config['Twitch_Channel'], f"/color {config['Trans_TextColor']}")
+    await ws.send_privmsg(config['Twitch_Channel'], f"/me has landed!")
+
+
+# メッセージを受信したら ####################
+@bot.event
+async def event_message(ctx):
+    'Runs every time a message is sent in chat.'
+
+    # コマンド処理 -----------------------
+    await bot.handle_commands(ctx)
+
+    if re.search('^!' , ctx.content):
+        return
+
+    # 変数入れ替え ------------------------
+    message = ctx.content
+    user    = ctx.author.name.lower()
+
+    # bot自身の投稿は無視 -----------------
+    if user == config['Trans_Username'].lower():
+        return
+
+    # 無視ユーザリストチェック -------------
+    print('USER:{}'.format(user))
+    if user in Ignore_Users:
+        return
+
+    # 無視テキストリストチェック -----------
+    for w in Ignore_Line:
+        if w in message:
             return
 
-        # 無視テキストリストチェック -----------
-        for w in Ignore_Line:
-            if w in message:
-                return
+    # 削除単語リストチェック --------------
+    for w in Delete_Words:
+        message = message.replace(w, '')
 
-        # 削除単語リストチェック --------------
-        for w in Delete_Words:
-            message = message.replace(w, '')
+    # 入力 --------------------------
+    in_text = message
+    print(in_text)
 
-        ################################
-        # 入力 --------------------------
-        in_text = message
-        print(in_text)
+    # 言語検出 -----------------------
+    lang_detect = ''
+    try:
+        lang_detect = translator.detect(in_text).lang
+    except Exception as e:
+        if Debug: print(e)
 
-        # !sound 効果音再生 --------------
-        if re.match('^\!sound ', in_text):
-            sound_name = in_text.strip().split(" ")[1]
-            sound_queue.put(sound_name)
-            return
+    # 無視対象言語だったら無視 ---------
+    if lang_detect in Ignore_Lang:
+        return
 
-        # 言語検出 -----------------------
-        lang_detect = ''
-        try:
-            lang_detect = translator.detect(in_text).lang
-        except:
-            pass
+    # 翻訳先言語の選択 ---------------
+    lang_dest = config['lang_TransToHome'] if lang_detect != config['lang_TransToHome'] else config['lang_HomeToOther']
 
-        # 無視対象言語だったら無視 ---------
-        if lang_detect in Ignore_Lang:
-            return
-
-        # 翻訳先言語の選択 ---------------
-        lang_dest = config['lang_TransToHome'] if lang_detect != config['lang_TransToHome'] else config['lang_HomeToOther']
-
-        # 翻訳先言語が文中で指定されてたら変更 -------
-        match = re.match('(.{2,5}?):', in_text)
-        if match and match.group(1) in TargetLangs:
-            lang_dest = match.group(1)
+    # 翻訳先言語が文中で指定されてたら変更 -------
+    m = re.match('(.{2,5}?):', in_text)
+    if m != None:
+        if m.group(1) in TargetLangs:
+            lang_dest = m.group(1)
             in_text = ''.join(in_text.split(':')[1:])
-        else:
-            pass
+    else:
+        pass
 
-        # 音声合成（入力文） --------------
-        if config['gTTS_In'] == 'True': gTTS_queue.put([in_text, lang_detect])
+    if Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
 
-        ################################
-        # 翻訳 --------------------------
-        translatedText = ''
-        try:
-            translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
-        except:
-            pass
-
-        # チャットへの投稿 ----------------
-        # 投稿先選択（標準のチャンネルか，別ルームか）
-        out_channel = '{}:{}:{}'.format("#chatrooms", config["channelID"], config["roomUUID"]) if config['channelID'] else channel
-
-        # 投稿内容整形 & 投稿
-        out_text = translatedText
-        if config['Show_ByName'] == 'True':
-            out_text = '{} [by {}]'.format(out_text, user)            
-        if config['Show_ByLang'] == 'True':
-            out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
-        self.message(out_channel, '/me ' + out_text)
+    # 音声合成（入力文） --------------
+    # if len(in_text) > int(config['TooLong_Cut']):
+    #     in_text = in_text[0:int(config['TooLong_Cut'])]
+    if config['gTTS_In'] == 'True': gTTS_queue.put([in_text, lang_detect])
 
 
-        # コンソールへの表示 --------------
-        print(out_text)
+    ################################
+    # 翻訳 --------------------------
+    translatedText = ''
+    try:
+        translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
+    except Exception as e:
+        if Debug: print(e)
 
-        # 音声合成（出力文） --------------
-        if config['gTTS_Out'] == 'True': gTTS_queue.put([translatedText, lang_dest])
+    # チャットへの投稿 ----------------
+    # 投稿内容整形 & 投稿
+    out_text = translatedText
+    if config['Show_ByName'] == 'True':
+        out_text = '{} [by {}]'.format(out_text, user)            
+    if config['Show_ByLang'] == 'True':
+        out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
+    await ctx.channel.send("/me " + out_text)
 
-        print()
+    # コンソールへの表示 --------------
+    print(out_text)
+
+    # 音声合成（出力文） --------------
+    # if len(translatedText) > int(config['TooLong_Cut']):
+    #     translatedText = translatedText[0:int(config['TooLong_Cut'])]
+    if config['gTTS_Out'] == 'True': gTTS_queue.put([translatedText, lang_dest])
+
+    print()
+
+
+##############################
+# コマンド ####################
+@bot.command(name='ver')
+async def ver(ctx):
+    await ctx.send('this is tTFN. ver: ' + version)
+
+@bot.command(name='sound')
+async def sound(ctx):
+    sound_name = ctx.content.strip().split(" ")[1]
+    sound_queue.put(sound_name)
 
 
 #####################################
@@ -250,7 +278,7 @@ def gTTS_play():
                 playsound(tts_file, True)
                 os.remove(tts_file)
             except Exception as e:
-                print('gTTS error: 音声合成できないね．')
+                print('gTTS error: TTS sound is not generated...')
                 if Debug: print(e.args)
 
 #####################################
@@ -266,39 +294,101 @@ def sound_play():
             try:
                 playsound('./sound/{}.mp3'.format(q), True)
             except Exception as e:
-                print('sound error: [!sound]コマンドの再生できないね．')
+                print('sound error: [!sound] command can not play sound...')
                 if Debug: print(e.args)
+
+#####################################
+# 最後のクリーンアップ処理 -------------
+def cleanup():
+    print("!!!Clean up!!!")
+
+    # Cleanup処理いろいろ
+
+    time.sleep(1)
+    print("!!!Clean up Done!!!")
+
+#####################################
+# sig handler  -------------
+def sig_handler(signum, frame) -> None:
+    sys.exit(1)
+
+
+#####################################
+# _MEI cleaner  -------------
+# Thanks to Sadra Heydari @ https://stackoverflow.com/questions/57261199/python-handling-the-meipass-folder-in-temporary-folder
+import glob
+import sys
+import os
+from shutil import rmtree
+
+def CLEANMEIFOLDERS():
+    try:
+        base_path = sys._MEIPASS
+
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    base_path = base_path.split("\\") 
+    base_path.pop(-1)                
+    temp_path = ""                    
+    for item in base_path:
+        temp_path = temp_path + item + "\\"
+
+    mei_folders = [f for f in glob.glob(temp_path + "**/", recursive=False)]
+    for item in mei_folders:
+        if item.find('_MEI') != -1 and item != sys._MEIPASS + "\\":
+            rmtree(item)
+
 
 
 
 # メイン処理 ###########################
-# 初期表示 -----------------------
-print('翻訳ちゃん twitchTransFreeNext (Version: {})'.format(version))
-print('Connect to the channel   : {}'.format(config['Twitch_Channel']))
-print('Translator Username      : {}'.format(config['Trans_Username']))
+def main():
+    signal.signal(signal.SIGTERM, sig_handler)
 
-# 作業用ディレクトリ削除 ＆ 作成 ----
-if os.path.exists(TMP_DIR):
-    du = shutil.rmtree(TMP_DIR)
-    time.sleep(0.3)
+    try:
+        # 以前に生成された _MEI フォルダを削除する
+        CLEANMEIFOLDERS()
 
-os.mkdir(TMP_DIR)
+        # 初期表示 -----------------------
+        print('twitchTransFreeNext (Version: {})'.format(version))
+        print('Connect to the channel   : {}'.format(config['Twitch_Channel']))
+        print('Translator Username      : {}'.format(config['Trans_Username']))
 
-# 音声合成スレッド起動 ################
-if config['gTTS_In'] == 'True' or  config['gTTS_Out'] == 'True':
-    thread_gTTS = threading.Thread(target=gTTS_play)
-    thread_gTTS.start()
+        # 作業用ディレクトリ削除 ＆ 作成 ----
+        if Debug: print("making tmp dir...")
+        if os.path.exists(TMP_DIR):
+            du = shutil.rmtree(TMP_DIR)
+            time.sleep(0.3)
 
-# 音声合成スレッド起動 ################
-thread_sound = threading.Thread(target=sound_play)
-thread_sound.start()
+        os.mkdir(TMP_DIR)
+        if Debug: print("made tmp dir.")
 
-# Twitch IRC 接続開始 ################
-# 接続 ---------------
-client = MyOwnBot(config['Trans_Username'], config['Trans_OAUTH']).start()
+        # 音声合成スレッド起動 ################
+        if Debug: print("run, tts thread...")
+        if config['gTTS_In'] == 'True' or  config['gTTS_Out'] == 'True':
+            thread_gTTS = threading.Thread(target=gTTS_play)
+            thread_gTTS.start()
 
-# Transユーザの色変更 --
-client.message('#' + config["Twitch_Channel"], '/color ' + config["Trans_TextColor"])
+        # 音声再生スレッド起動 ################
+        if Debug: print("run, sound play thread...")
+        thread_sound = threading.Thread(target=sound_play)
+        thread_sound.start()
 
-# 無限ループ -----------
-client.handle_forever()
+        # bot
+        bot.run()
+
+
+    except Exception as e:
+        if Debug: print(e)
+
+    finally:
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        cleanup()
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
