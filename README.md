@@ -64,7 +64,6 @@ Delete_Words            = saatanNooBow, BikuBikuTest
 gTTS_In                 = True
 gTTS_Out                = True
 
-
 #######################################################
 # For TLANSLATE ROOM CONFIGS ##########################
 ##### channelID <- owner_id, roomUUID <- _id ##########
@@ -101,15 +100,6 @@ https://cloud.google.com/translate/docs/languages
 At the time of translation, you can select the target language like `en:` at the beginning of the sentence.  
 Example) ru: Hello -> привет там
 
-## translated text is send to chat-room
-If you want to send the translated text to chat-room in your channel, please read this section.
-You can get more information about [chat-room] following blogs.
-https://blog.twitch.tv/bring-your-community-together-with-rooms-ad60cab1af0a
-
-1. Make chat-room in your channel.
-2. By using `roomUUID_checker.exe`, get `channelID(owner_id)` and `roomUUID(_id)`
-3. Set it to config.txt
-
 NOTE: When rewriting config.txt, please delete the `#` mark at the beginning of each setting value!
 
 
@@ -123,12 +113,8 @@ The developer of ...
     - https://github.com/pndurette/gTTS
 - playsound by TaylorSMarks
     - https://github.com/TaylorSMarks/playsound
-- python_twitch_irc by jspaulsen
-    - https://github.com/jspaulsen/python-twitch-irc
-
-and Fix some bugs ...
-- gTTS-token by Boudewijn26
-- googletrans/gtoken by michaeldegroot/cats-blender-plugin
+- TwitchIO
+    - https://github.com/TwitchIO/TwitchIO
 
 # Developer Info.
 
