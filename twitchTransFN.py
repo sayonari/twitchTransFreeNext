@@ -25,8 +25,9 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.0.11'
+version = '2.1.0'
 '''
+v2.1.0  : config.py の導入
 v2.0.11 : gTTSアップデート＆twitch接続モジュール変更＆色々修正
 v2.0.10 : python コードの文字コードをUTF-8と指定
 v2.0.10 : オプション gTTS を gTTS_In, gTTS_Out に分割
@@ -40,7 +41,7 @@ v2.0.3  : いろいろ実装した
 
 
 # 設定 ###############################
-Debug = False
+
 
 #####################################
 # 初期設定 ###########################
@@ -59,81 +60,59 @@ TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg",
                 "pl", "pt", "ma", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw",
                 "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
 
-# config keys
-config = {'Twitch_Channel':'',
-          'Trans_Username':'', 'Trans_OAUTH':'', 'Trans_TextColor':'',
-          'lang_TransToHome':'','lang_HomeToOther':'',
-          'Show_ByName': '','Show_ByLang': '',
-          'Ignore_Lang': '',
-          'Ignore_Users': '', 'Ignore_Line':'', 'Delete_Words':'',
-          'gTTS_In':'', 'gTTS_Out':'',
-          'TooLong_Cut':'',
-          'channelID':'','roomUUID':''}
-
 ##########################################
 # load config text #######################
-readfile = 'config.txt'
-f = open(readfile, 'r', encoding='utf-8_sig')
-lines = f.readlines()
-
-cnt = 0
-for l in lines:
-    cnt = cnt + 1
-    if l.find("#") == 0 or l.strip() == "":
-        continue
-
-    conf_line = l.split('=')
-    if conf_line[0].strip() in config.keys():
-        config[conf_line[0].strip()] = conf_line[1].strip()
-    else:
-        print("ERROR: " + conf_line[0].strip() + " is can't use in config.txt [line " + str(cnt) + "]! please check it.")
-        exit(0)
-
-
-f.close()
+import importlib
+try:
+    sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
+    config = importlib.import_module('config')
+except Exception as e:
+    print(e)
+    print('Please make [config.py] and put it with twitchTransFN')
+    input() # stop for error!!
 
 ###################################
 # fix some config errors ##########
 # lowercase channel and username ------
-config['Twitch_Channel'] = config['Twitch_Channel'].lower()
-config['Trans_Username'] = config['Trans_Username'].lower()
+config.Twitch_Channel = config.Twitch_Channel.lower()
+config.Trans_Username = config.Trans_Username.lower()
 
 # remove "#" mark ------
-if config['Twitch_Channel'].startswith('#'):
-    print("Find # mark at channel name! I remove '#' from 'config:Twitch_Channel'")
-    config["Twitch_Channel"] = config["Twitch_Channel"][1:]
+if config.Twitch_Channel.startswith('#'):
+    # print("Find # mark at channel name! I remove '#' from 'config:Twitch_Channel'")
+    config.Twitch_Channel = config.Twitch_Channel[1:]
 
 # remove "oauth:" mark ------
-if config['Trans_OAUTH'].startswith('oauth:'):
-    print("Find 'oauth:' at OAUTH text! I remove 'oauth:' from 'config:Trans_OAUTH'")
-    config["Trans_OAUTH"] = config["Trans_OAUTH"][6:]
+if config.Trans_OAUTH.startswith('oauth:'):
+    # print("Find 'oauth:' at OAUTH text! I remove 'oauth:' from 'config:Trans_OAUTH'")
+    config.Trans_OAUTH = config.Trans_OAUTH[6:]
 
 
 # 無視言語リストの準備 ################
-Ignore_Lang = [x.strip() for x in config['Ignore_Lang'].split(',')]
+Ignore_Lang = [x.strip() for x in config.Ignore_Lang]
 
 # 無視ユーザリストの準備 ################
-Ignore_Users = [x.strip() for x in config['Ignore_Users'].split(',')]
+Ignore_Users = [x.strip() for x in config.Ignore_Users]
 
 # 無視ユーザリストのユーザ名を全部小文字にする
 Ignore_Users = [str.lower() for str in Ignore_Users]
 
 # 無視テキストリストの準備 ################
-Ignore_Line = [x.strip() for x in config['Ignore_Line'].split(',')]
+Ignore_Line = [x.strip() for x in config.Ignore_Line]
 
 # 無視単語リストの準備 ################
-Delete_Words = [x.strip() for x in config['Delete_Words'].split(',')]
+Delete_Words = [x.strip() for x in config.Delete_Words]
 
 
 ####################################################
 #####################################
 # Simple echo bot.
 bot = commands.Bot(
-    irc_token           = "oauth:" + config["Trans_OAUTH"],
+    irc_token           = "oauth:" + config.Trans_OAUTH,
     client_id           = "",
-    nick                = config['Trans_Username'],
+    nick                = config.Trans_Username,
     prefix              = "!",
-    initial_channels    = [config['Twitch_Channel']]
+    initial_channels    = [config.Twitch_Channel]
 )
 
 ##########################################
@@ -144,10 +123,10 @@ bot = commands.Bot(
 @bot.event
 async def event_ready():
     'Called once when the bot goes online.'
-    print(f"{config['Trans_Username']} is online!")
+    print(f"{config.Trans_Username} is online!")
     ws = bot._ws  # this is only needed to send messages within event_ready
-    await ws.send_privmsg(config['Twitch_Channel'], f"/color {config['Trans_TextColor']}")
-    await ws.send_privmsg(config['Twitch_Channel'], f"/me has landed!")
+    await ws.send_privmsg(config.Twitch_Channel, f"/color {config.Trans_TextColor}")
+    await ws.send_privmsg(config.Twitch_Channel, f"/me has landed!")
 
 
 # メッセージを受信したら ####################
@@ -158,15 +137,16 @@ async def event_message(ctx):
     # コマンド処理 -----------------------
     await bot.handle_commands(ctx)
 
-    if re.search('^!' , ctx.content):
+    if ctx.content.startswith('!'):
         return
 
     # 変数入れ替え ------------------------
     message = ctx.content
     user    = ctx.author.name.lower()
 
-    # bot自身の投稿は無視 -----------------
-    if user == config['Trans_Username'].lower():
+    # # bot自身の投稿は無視 -----------------
+    if config.Debug: print(f'echo: {ctx.echo}, {ctx.content}')
+    if ctx.echo:
         return
 
     # 無視ユーザリストチェック -------------
@@ -192,30 +172,30 @@ async def event_message(ctx):
     try:
         lang_detect = translator.detect(in_text).lang
     except Exception as e:
-        if Debug: print(e)
+        if config.Debug: print(e)
 
     # 無視対象言語だったら無視 ---------
     if lang_detect in Ignore_Lang:
         return
 
     # 翻訳先言語の選択 ---------------
-    lang_dest = config['lang_TransToHome'] if lang_detect != config['lang_TransToHome'] else config['lang_HomeToOther']
+    lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
 
     # 翻訳先言語が文中で指定されてたら変更 -------
-    m = re.match('(.{2,5}?):', in_text)
-    if m != None:
-        if m.group(1) in TargetLangs:
-            lang_dest = m.group(1)
-            in_text = ''.join(in_text.split(':')[1:])
+    m = in_text.split(':')
+    if len(m) >= 2:
+        if m[0] in TargetLangs:
+            lang_dest = m[0]
+            in_text = ':'.join(m[1:])
     else:
         pass
 
-    if Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
+    if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
 
     # 音声合成（入力文） --------------
-    # if len(in_text) > int(config['TooLong_Cut']):
-    #     in_text = in_text[0:int(config['TooLong_Cut'])]
-    if config['gTTS_In'] == 'True': gTTS_queue.put([in_text, lang_detect])
+    # if len(in_text) > int(config.TooLong_Cut):
+    #     in_text = in_text[0:int(config.TooLong_Cut)]
+    if config.gTTS_In: gTTS_queue.put([in_text, lang_detect])
 
 
     ################################
@@ -224,14 +204,14 @@ async def event_message(ctx):
     try:
         translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
     except Exception as e:
-        if Debug: print(e)
+        if config.Debug: print(e)
 
     # チャットへの投稿 ----------------
     # 投稿内容整形 & 投稿
     out_text = translatedText
-    if config['Show_ByName'] == 'True':
+    if config.Show_ByName:
         out_text = '{} [by {}]'.format(out_text, user)            
-    if config['Show_ByLang'] == 'True':
+    if config.Show_ByLang:
         out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
     await ctx.channel.send("/me " + out_text)
 
@@ -239,9 +219,9 @@ async def event_message(ctx):
     print(out_text)
 
     # 音声合成（出力文） --------------
-    # if len(translatedText) > int(config['TooLong_Cut']):
-    #     translatedText = translatedText[0:int(config['TooLong_Cut'])]
-    if config['gTTS_Out'] == 'True': gTTS_queue.put([translatedText, lang_dest])
+    # if len(translatedText) > int(config.TooLong_Cut):
+    #     translatedText = translatedText[0:int(config.TooLong_Cut)]
+    if config.gTTS_Out: gTTS_queue.put([translatedText, lang_dest])
 
     print()
 
@@ -273,13 +253,13 @@ def gTTS_play():
             try:
                 tts = gTTS(text, lang=tl)
                 tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
-                if Debug: print('gTTS file: {}'.format(tts_file))
+                if config.Debug: print('gTTS file: {}'.format(tts_file))
                 tts.save(tts_file)
                 playsound(tts_file, True)
                 os.remove(tts_file)
             except Exception as e:
                 print('gTTS error: TTS sound is not generated...')
-                if Debug: print(e.args)
+                if config.Debug: print(e.args)
 
 #####################################
 # !sound 音声再生スレッド -------------
@@ -295,7 +275,7 @@ def sound_play():
                 playsound('./sound/{}.mp3'.format(q), True)
             except Exception as e:
                 print('sound error: [!sound] command can not play sound...')
-                if Debug: print(e.args)
+                if config.Debug: print(e.args)
 
 #####################################
 # 最後のクリーンアップ処理 -------------
@@ -352,26 +332,26 @@ def main():
 
         # 初期表示 -----------------------
         print('twitchTransFreeNext (Version: {})'.format(version))
-        print('Connect to the channel   : {}'.format(config['Twitch_Channel']))
-        print('Translator Username      : {}'.format(config['Trans_Username']))
+        print('Connect to the channel   : {}'.format(config.Twitch_Channel))
+        print('Translator Username      : {}'.format(config.Trans_Username))
 
         # 作業用ディレクトリ削除 ＆ 作成 ----
-        if Debug: print("making tmp dir...")
+        if config.Debug: print("making tmp dir...")
         if os.path.exists(TMP_DIR):
             du = shutil.rmtree(TMP_DIR)
             time.sleep(0.3)
 
         os.mkdir(TMP_DIR)
-        if Debug: print("made tmp dir.")
+        if config.Debug: print("made tmp dir.")
 
         # 音声合成スレッド起動 ################
-        if Debug: print("run, tts thread...")
-        if config['gTTS_In'] == 'True' or  config['gTTS_Out'] == 'True':
+        if config.Debug: print("run, tts thread...")
+        if config.gTTS_In or  config.gTTS_Out:
             thread_gTTS = threading.Thread(target=gTTS_play)
             thread_gTTS.start()
 
         # 音声再生スレッド起動 ################
-        if Debug: print("run, sound play thread...")
+        if config.Debug: print("run, sound play thread...")
         thread_sound = threading.Thread(target=sound_play)
         thread_sound.start()
 
@@ -380,7 +360,8 @@ def main():
 
 
     except Exception as e:
-        if Debug: print(e)
+        if config.Debug: print(e)
+        input() # stop for error!!
 
     finally:
         signal.signal(signal.SIGTERM, signal.SIG_IGN)

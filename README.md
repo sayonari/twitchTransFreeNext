@@ -2,10 +2,12 @@
 Next Generation of twitchTransFree!!!!
 
 # USAGE
-1. rewrite `config.txt`
+1. rewrite `config.py`
 2. double-click `twitchTransFN.exe`
 
 That's all!
+
+NOTE: The file type of config was chaged from .txt to .py!
 
 # I support my wife 24/7 :-) 
 This software is made for my wife!  
@@ -38,37 +40,34 @@ https://www.twitch.tv/anomomm
 ```
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = xxx_target_channel_name_xxx
+Twitch_Channel          = 'xxx_target_channel_name_xxx'
 
-Trans_Username          = xxx_trans_user_name_xxx
-Trans_OAUTH             = xxxx_oauth_for_trans_user_xxxx
+Trans_Username          = 'xxx_trans_user_name_xxx'
+Trans_OAUTH             = 'xxxx_oauth_for_trans_user_xxxx'
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
-Trans_TextColor         = GoldenRod
+Trans_TextColor         = 'GoldenRod'
 # Blue, Coral, DodgerBlue, SpringGreen, YellowGreen, Green, OrangeRed, Red, GoldenRod, HotPink, CadetBlue, SeaGreen, Chocolate, BlueViolet, and Firebrick
 
-lang_TransToHome        = ja
-lang_HomeToOther        = en
+lang_TransToHome        = 'ja'
+lang_HomeToOther        = 'en'
 
 Show_ByName             = True
 Show_ByLang             = True
 
-Ignore_Lang             = 
-Ignore_Users            = Nightbot, BikuBikuTest
-Ignore_Line             = http, BikuBikuTest, 888, ８８８
-Delete_Words            = saatanNooBow, BikuBikuTest
+Ignore_Lang             = ['']
+Ignore_Users            = ['Nightbot', 'BikuBikuTest']
+Ignore_Line             = ['http', 'BikuBikuTest', '888', '８８８']
+Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 # gTTS_In:User Input Text, gTTS_Out:Bot Output Text
 gTTS_In                 = True
 gTTS_Out                = True
 
-#######################################################
-# For TLANSLATE ROOM CONFIGS ##########################
-##### channelID <- owner_id, roomUUID <- _id ##########
-# channelID               = 000000000
-# roomUUID                = 00000000-0000-0000-0000-000000000000
+# If you meet any bugs, You can check some error message using Debug mode (Debug = True)
+Debug                   = False
 ```
 
 | Option| Description |
@@ -85,10 +84,9 @@ gTTS_Out                = True
 | Ignore_Users | You can set some users : [Nightbot, BikuBikuTest, someotheruser, ...] |
 | Ignore_Line | If the words are in message, the message will be ignored.|
 | Delete_Words | The words will be removed from message. |
-| gTTS | Input text will be read by TTS voice! |
-| gTTS | Bot output text will be read by TTS voice! |
-| channelID | (with roomUUID) translated text is send to chat-room |
-| roomUUID | (with channelID) translated text is send to chat-room |
+| gTTS_In | Input text will be read by TTS voice! |
+| gTTS_Out | Bot output text will be read by TTS voice! |
+| Debug | You can check some error message using Debug mode (Debug = True)|
 
 
 # memo
@@ -102,6 +100,10 @@ Example) ru: Hello -> привет там
 
 NOTE: When rewriting config.txt, please delete the `#` mark at the beginning of each setting value!
 
+## command: (version)
+`!ver`: print the software version.
+
+`!sound xxxx`: play sound (xxxx.mp3), if you put sound data at sound folder.
 
 # Thanks
 Thanks to Pioneers!
