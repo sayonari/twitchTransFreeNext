@@ -36,8 +36,8 @@ https://github.com/sayonari/twitchTransFreeNext
 Painted by anomon  
 https://www.twitch.tv/anomomm
 
-# config.txt
-```
+# config.py
+```python
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
 Twitch_Channel          = 'xxx_target_channel_name_xxx'
