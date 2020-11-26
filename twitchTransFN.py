@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from googletrans import Translator
+#from googletrans import Translator
+from google_trans_new import google_translator  
+
 from gtts import gTTS
 from playsound import playsound
 import os
@@ -25,8 +27,9 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.1.0'
+version = '2.1.1'
 '''
+v2.1.1  : googletrans -> google_trans_new へ置き換え
 v2.1.0  : config.py の導入
 v2.0.11 : gTTSアップデート＆twitch接続モジュール変更＆色々修正
 v2.0.10 : python コードの文字コードをUTF-8と指定
@@ -45,7 +48,8 @@ v2.0.3  : いろいろ実装した
 
 #####################################
 # 初期設定 ###########################
-translator = Translator()
+#translator = Translator()
+translator = google_translator(timeout=5)
 
 gTTS_queue = queue.Queue()
 sound_queue = queue.Queue()
@@ -170,7 +174,8 @@ async def event_message(ctx):
     # 言語検出 -----------------------
     lang_detect = ''
     try:
-        lang_detect = translator.detect(in_text).lang
+        # lang_detect = translator.detect(in_text).lang
+        lang_detect = translator.detect(in_text)[0]
     except Exception as e:
         if config.Debug: print(e)
 
@@ -202,7 +207,8 @@ async def event_message(ctx):
     # 翻訳 --------------------------
     translatedText = ''
     try:
-        translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
+        # translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
+        translatedText = translator.translate(in_text, lang_dest)
     except Exception as e:
         if config.Debug: print(e)
 
