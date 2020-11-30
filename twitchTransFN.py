@@ -27,8 +27,9 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.1.1'
+version = '2.1.2'
 '''
+v2.1.2  : _MEI関連
 v2.1.1  : googletrans -> google_trans_new へ置き換え
 v2.1.0  : config.py の導入
 v2.0.11 : gTTSアップデート＆twitch接続モジュール変更＆色々修正
@@ -314,6 +315,7 @@ def CLEANMEIFOLDERS():
     except Exception:
         base_path = os.path.abspath(".")
 
+    if config.Debug: print(f'_MEI base path: {base_path}')
     base_path = base_path.split("\\") 
     base_path.pop(-1)                
     temp_path = ""                    
