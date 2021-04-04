@@ -27,8 +27,9 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.1.2'
+version = '2.1.3'
 '''
+v2.1.3  : 関連モジュールアップデート、バグフィクス
 v2.1.2  : _MEI関連
 v2.1.1  : googletrans -> google_trans_new へ置き換え
 v2.1.0  : config.py の導入
@@ -180,10 +181,6 @@ async def event_message(ctx):
     except Exception as e:
         if config.Debug: print(e)
 
-    # 無視対象言語だったら無視 ---------
-    if lang_detect in Ignore_Lang:
-        return
-
     # 翻訳先言語の選択 ---------------
     lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
 
@@ -194,7 +191,10 @@ async def event_message(ctx):
             lang_dest = m[0]
             in_text = ':'.join(m[1:])
     else:
-        pass
+        # 翻訳先が (:)で指定されてなくて、
+        # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
+        if lang_detect in Ignore_Lang:
+            return
 
     if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
 
