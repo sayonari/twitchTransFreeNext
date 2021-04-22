@@ -66,6 +66,10 @@ Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 gTTS_In                 = True
 gTTS_Out                = True
 
+# if you make TTS for only few lang, please add langID in the list
+# for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
+ReadOnlyTheseLang       = []
+
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
 Debug                   = False
 ```
@@ -86,6 +90,7 @@ Debug                   = False
 | Delete_Words | The words will be removed from message. |
 | gTTS_In | Input text will be read by TTS voice! |
 | gTTS_Out | Bot output text will be read by TTS voice! |
+| ReadOnlyTheseLang | You can set the TTS language! |
 | Debug | You can check some error message using Debug mode (Debug = True)|
 
 

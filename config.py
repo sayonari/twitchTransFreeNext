@@ -26,5 +26,9 @@ Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 gTTS_In                 = True
 gTTS_Out                = True
 
+# if you make TTS for only few lang, please add langID in the list
+# for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
+ReadOnlyTheseLang       = []
+
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
 Debug                   = False

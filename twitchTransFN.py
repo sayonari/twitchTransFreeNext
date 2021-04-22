@@ -27,8 +27,9 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.1.3'
+version = '2.1.4'
 '''
+v2.1.4  : 読み上げ言語指定ができるようにした
 v2.1.3  : 関連モジュールアップデート、バグフィクス
 v2.1.2  : _MEI関連
 v2.1.1  : googletrans -> google_trans_new へ置き換え
@@ -257,6 +258,15 @@ def gTTS_play():
         else:
             text    = q[0]
             tl      = q[1]
+
+            print('debug in gTTS')
+            print(f'config.ReadOnlyTheseLang : {config.ReadOnlyTheseLang}')
+            print(f'tl not in config.ReadOnlyTheseLang : {tl not in config.ReadOnlyTheseLang}')
+
+            # 「この言語だけ読み上げて」リストが空じゃなく，なおかつそのリストにに入ってなかったら無視
+            if config.ReadOnlyTheseLang and (tl not in config.ReadOnlyTheseLang):
+                continue
+
             try:
                 tts = gTTS(text, lang=tl)
                 tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
