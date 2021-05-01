@@ -6,6 +6,8 @@ from google_trans_new import google_translator
 
 from gtts import gTTS
 from playsound import playsound
+import sox
+
 import os
 from datetime import datetime
 import threading
@@ -13,6 +15,8 @@ import queue
 import time
 import shutil
 import re
+
+import librosa
 
 import asyncio
 
@@ -27,8 +31,9 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.1.4'
+version = '2.1.5'
 '''
+v2.1.5  : 読み上げ速度の変更
 v2.1.4  : 読み上げ言語指定ができるようにした
 v2.1.3  : 関連モジュールアップデート、バグフィクス
 v2.1.2  : _MEI関連
@@ -56,6 +61,7 @@ translator = google_translator(timeout=5)
 
 gTTS_queue = queue.Queue()
 sound_queue = queue.Queue()
+
 
 # configure for Google TTS & play
 TMP_DIR = './tmp/'
@@ -121,6 +127,13 @@ bot = commands.Bot(
     prefix              = "!",
     initial_channels    = [config.Twitch_Channel]
 )
+
+#####################################
+# tts : change speed 
+if config.ReadSpeed and config.ReadSpeed != 1.0:
+    tfm = sox.Transformer()
+    tfm.tempo(config.ReadSpeed)
+
 
 ##########################################
 # メイン動作 ##############################
@@ -246,6 +259,19 @@ async def sound(ctx):
     sound_queue.put(sound_name)
 
 
+##############################
+# 音読み込み ####################
+def read(f, normalized=False):
+    """MP3 to numpy array"""
+    a = pydub.AudioSegment.from_mp3(f)
+    y = np.array(a.get_array_of_samples())
+    if a.channels == 2:
+        y = y.reshape((-1, 2))
+    if normalized:
+        return a.frame_rate, np.float32(y) / 2**15
+    else:
+        return a.frame_rate, y
+
 #####################################
 # 音声合成 ＆ ファイル保存 ＆ ファイル削除
 def gTTS_play():
@@ -259,21 +285,34 @@ def gTTS_play():
             text    = q[0]
             tl      = q[1]
 
-            print('debug in gTTS')
-            print(f'config.ReadOnlyTheseLang : {config.ReadOnlyTheseLang}')
-            print(f'tl not in config.ReadOnlyTheseLang : {tl not in config.ReadOnlyTheseLang}')
+            if config.Debug:
+                print('debug in gTTS')
+                print(f'config.ReadOnlyTheseLang : {config.ReadOnlyTheseLang}')
+                print(f'tl not in config.ReadOnlyTheseLang : {tl not in config.ReadOnlyTheseLang}')
 
             # 「この言語だけ読み上げて」リストが空じゃなく，なおかつそのリストにに入ってなかったら無視
             if config.ReadOnlyTheseLang and (tl not in config.ReadOnlyTheseLang):
                 continue
 
             try:
-                tts = gTTS(text, lang=tl)
-                tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
+                tts = gTTS(text, lang=tl, slow=False)
+                tts_file = f'./tmp/cnt_{datetime.now().microsecond}.mp3'
                 if config.Debug: print('gTTS file: {}'.format(tts_file))
                 tts.save(tts_file)
-                playsound(tts_file, True)
+
+                # mp3 play speed change 
+                if config.ReadSpeed and config.ReadSpeed != 1.0:
+                    tts_file_changespeed = f'./tmp/CS_cnt_{datetime.now().microsecond}.mp3'
+                    tfm.build_file(tts_file, tts_file_changespeed)
+
+                    playsound(tts_file_changespeed, True)
+                    os.remove(tts_file_changespeed)
+
+                else:
+                    playsound(tts_file, True)
+                
                 os.remove(tts_file)
+
             except Exception as e:
                 print('gTTS error: TTS sound is not generated...')
                 if config.Debug: print(e.args)

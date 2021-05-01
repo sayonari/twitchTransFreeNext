@@ -26,6 +26,9 @@ Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 gTTS_In                 = True
 gTTS_Out                = True
 
+# set the read speed: 2.0 means 2 times faster! 
+ReadSpeed               = 1.7
+
 # if you make TTS for only few lang, please add langID in the list
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
 ReadOnlyTheseLang       = []
