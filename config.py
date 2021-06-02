@@ -1,9 +1,9 @@
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = 'xxx_target_channel_name_xxx'
+Twitch_Channel          = miruku_Twitch
 
-Trans_Username          = 'xxx_trans_user_name_xxx'
-Trans_OAUTH             = 'xxxx_oauth_for_trans_user_xxxx'
+Trans_Username          = mirukusub_bot
+Trans_OAUTH             = oauth:ttruk1cg71ojbptrmnm5t7ks3hph0v
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
