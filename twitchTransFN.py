@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #from googletrans import Translator
-from google_trans_new import google_translator  
+from google_trans_new import google_translator, constant
 
 from gtts import gTTS
 from playsound import playsound
@@ -52,13 +52,16 @@ v2.0.3  : いろいろ実装した
 #####################################
 # 初期設定 ###########################
 #translator = Translator()
-translator = google_translator(timeout=5)
+# translator = google_translator(timeout=5)
 
 gTTS_queue = queue.Queue()
 sound_queue = queue.Queue()
 
 # configure for Google TTS & play
 TMP_DIR = './tmp/'
+
+# translate.googleのサフィックスリスト
+URL_SUFFIX_LIST = [re.search('translate.google.(.*)', url.strip()).group(1) for url in constant.DEFAULT_SERVICE_URLS]
 
 TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
                 "hr", "cs", "da", "nl", "en", "eo", "et", "tl", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha",
@@ -110,6 +113,13 @@ Ignore_Line = [x.strip() for x in config.Ignore_Line]
 # 無視単語リストの準備 ################
 Delete_Words = [x.strip() for x in config.Delete_Words]
 
+# suffixのチェック、google_trans_newインスタンス生成
+if config.GoogleTranslate_suffix not in URL_SUFFIX_LIST:
+    url_suffix = 'co.jp'
+else:
+    url_suffix = config.GoogleTranslate_suffix
+
+translator = google_translator(url_suffix=url_suffix)
 
 ####################################################
 #####################################
@@ -352,6 +362,7 @@ def main():
         print('twitchTransFreeNext (Version: {})'.format(version))
         print('Connect to the channel   : {}'.format(config.Twitch_Channel))
         print('Translator Username      : {}'.format(config.Trans_Username))
+        print('Google Translate         : translate.google.{}'.format(url_suffix))
 
         # 作業用ディレクトリ削除 ＆ 作成 ----
         if config.Debug: print("making tmp dir...")
