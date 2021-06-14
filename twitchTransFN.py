@@ -27,8 +27,12 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.1.4'
+version = '2.2.0'
 '''
+v2.2.0  : - 翻訳サーバの選択（ちゃらひろ先生による実装）
+          - emoteを削除する
+          - MacOS版と一本化（pyinstallerでのconfig.py読み込み対策）
+（v2.1.5  : 音声再生速度の変更オプション）
 v2.1.4  : 読み上げ言語指定ができるようにした
 v2.1.3  : 関連モジュールアップデート、バグフィクス
 v2.1.2  : _MEI関連
@@ -47,6 +51,10 @@ v2.0.3  : いろいろ実装した
 
 
 # 設定 ###############################
+# Enter the suffix of the Google Translate URL you normally use.
+# Example: translate.google.co.jp -> 'co.jp'
+#          translate.google.com   -> 'com'
+GoogleTranslate_suffix  = 'co.jp'
 
 
 #####################################
@@ -73,6 +81,7 @@ TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg",
 ##########################################
 # load config text #######################
 import importlib
+
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
     config = importlib.import_module('config')
@@ -80,6 +89,21 @@ except Exception as e:
     print(e)
     print('Please make [config.py] and put it with twitchTransFN')
     input() # stop for error!!
+
+# # For [MacOS & pyinstaller] 
+# from AppKit import NSBundle
+
+# path = NSBundle.mainBundle().pathForResource_ofType_("config", "py")
+# path = path.replace('config.py','')
+# try:
+#     sys.path.append(os.path.join(path, '.'))
+#     config = importlib.import_module('config')
+# except Exception as e:
+#     print(e)
+#     print(path)
+#     print('Please make [config.py] and put it with twitchTransFN')
+#     input() # stop for error!!
+
 
 ###################################
 # fix some config errors ##########
@@ -114,10 +138,10 @@ Ignore_Line = [x.strip() for x in config.Ignore_Line]
 Delete_Words = [x.strip() for x in config.Delete_Words]
 
 # suffixのチェック、google_trans_newインスタンス生成
-if config.GoogleTranslate_suffix not in URL_SUFFIX_LIST:
+if GoogleTranslate_suffix not in URL_SUFFIX_LIST:
     url_suffix = 'co.jp'
 else:
-    url_suffix = config.GoogleTranslate_suffix
+    url_suffix = GoogleTranslate_suffix
 
 translator = google_translator(url_suffix=url_suffix)
 
@@ -179,6 +203,51 @@ async def event_message(ctx):
     # 削除単語リストチェック --------------
     for w in Delete_Words:
         message = message.replace(w, '')
+
+    # emoteの削除 --------------------------    
+    # エモート抜き出し
+    emote_list = []
+    if ctx.tags:
+        if ctx.tags['emotes']:
+            # エモートの種類数分 '/' で分割されて提示されてくる
+            emotes_s = ctx.tags['emotes'].split('/')
+            for emo in emotes_s:
+                if config.Debug: print()
+                if config.Debug: print(emo)
+                e_id, e_pos = emo.split(':')
+                
+                # 同一エモートが複数使われてたら，その数分，情報が入ってくる
+                # （例：1110537:4-14,16-26）
+                if config.Debug: print(f'e_pos:{e_pos}')
+                if ',' in e_pos:
+                    ed_pos = e_pos.split(',')
+                    for e in ed_pos:
+                        if config.Debug: print(f'{e}')
+                        if config.Debug: print(e.split('-'))
+                        e_s, e_e = e.split('-')
+                        if config.Debug: print(ctx.content[int(e_s):int(e_e)+1]) 
+
+                        # リストにエモートを追加
+                        emote_list.append(ctx.content[int(e_s):int(e_e)+1])
+
+                else:
+                    e = e_pos
+                    e_s, e_e = e.split('-')
+                    if config.Debug: print(ctx.content[int(e_s):int(e_e)+1]) 
+
+                    # リストにエモートを追加
+                    emote_list.append(ctx.content[int(e_s):int(e_e)+1])
+                
+            # message(ctx.contextの編集用変数)から，エモート削除
+            if config.Debug: print(f'message with emote:{message}')
+            for w in sorted(emote_list, key=len, reverse=True):
+                if config.Debug: print(w)
+                message = message.replace(w, '')
+
+            if config.Debug: print(f'message without emote:{message}')
+
+    # 複数空文字を一つにまとめる --------
+    message = " ".join( message.split() )
 
     # 入力 --------------------------
     in_text = message
@@ -243,7 +312,6 @@ async def event_message(ctx):
 
     print()
 
-
 ##############################
 # コマンド ####################
 @bot.command(name='ver')
@@ -254,7 +322,6 @@ async def ver(ctx):
 async def sound(ctx):
     sound_name = ctx.content.strip().split(" ")[1]
     sound_queue.put(sound_name)
-
 
 #####################################
 # 音声合成 ＆ ファイル保存 ＆ ファイル削除
@@ -269,9 +336,9 @@ def gTTS_play():
             text    = q[0]
             tl      = q[1]
 
-            print('debug in gTTS')
-            print(f'config.ReadOnlyTheseLang : {config.ReadOnlyTheseLang}')
-            print(f'tl not in config.ReadOnlyTheseLang : {tl not in config.ReadOnlyTheseLang}')
+            if config.Debug: print('debug in gTTS')
+            if config.Debug: print(f'config.ReadOnlyTheseLang : {config.ReadOnlyTheseLang}')
+            if config.Debug: print(f'tl not in config.ReadOnlyTheseLang : {tl not in config.ReadOnlyTheseLang}')
 
             # 「この言語だけ読み上げて」リストが空じゃなく，なおかつそのリストにに入ってなかったら無視
             if config.ReadOnlyTheseLang and (tl not in config.ReadOnlyTheseLang):

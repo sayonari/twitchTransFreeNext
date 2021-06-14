@@ -21,11 +21,6 @@ Ignore_Users            = ['Nightbot', 'BikuBikuTest']
 Ignore_Line             = ['http', 'BikuBikuTest', '888', '８８８']
 Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 
-# Enter the suffix of the Google Translate URL you normally use.
-# Example: translate.google.co.jp -> 'co.jp'
-#          translate.google.com   -> 'com'
-GoogleTranslate_suffix  = 'co.jp'
-
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 # gTTS_In:User Input Text, gTTS_Out:Bot Output Text
 gTTS_In                 = True
