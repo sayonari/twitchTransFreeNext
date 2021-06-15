@@ -27,8 +27,9 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.2.0'
+version = '2.2.1'
 '''
+v2.2.1  : !timerコマンド追加
 v2.2.0  : - 翻訳サーバの選択（ちゃらひろ先生による実装）
           - emoteを削除する
           - MacOS版と一本化（pyinstallerでのconfig.py読み込み対策）
@@ -322,6 +323,37 @@ async def ver(ctx):
 async def sound(ctx):
     sound_name = ctx.content.strip().split(" ")[1]
     sound_queue.put(sound_name)
+
+@bot.command(name='timer')
+async def timer(ctx):
+    timer_min = 0
+    timer_name = ''
+
+    d = ctx.content.strip().split(" ")
+    if len(d) == 2:
+        try:
+            timer_min = int(d[1])
+        except Exception as e:
+                print('timer error: !timer [min] [name]')
+                if config.Debug: print(e.args)
+                return 0
+
+    elif len(d) == 3:
+        try:
+            timer_min = int(d[1])
+            timer_name = d[2]
+        except Exception as e:
+                print('timer error: !timer [min] [name]')
+                if config.Debug: print(e.args)
+                return 0
+
+    else:
+        print(f'command error [{ctx.content}]')
+        return 0
+
+    await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) start! ####')
+    await asyncio.sleep(timer_min*60)
+    await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) end! ####')
 
 #####################################
 # 音声合成 ＆ ファイル保存 ＆ ファイル削除
