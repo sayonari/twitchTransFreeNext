@@ -1,6 +1,9 @@
 # twitchTransFreeNext
 Next Generation of twitchTransFree!!!!
 
+# Official Webpage
+http://www.sayonari.com/trans_asr/
+
 # USAGE
 1. rewrite `config.py`
 2. double-click `twitchTransFN.exe`
@@ -129,5 +132,6 @@ The developer of ...
 |--|--|
 | Developer | husband_sayonari_omega |
 |github | https://github.com/sayonari/twitchTransFreeNext |
+| Webpage | http://www.sayonari.com/trans_asr/ |
 | mail | sayonari@gmail.com |
 | Twitter | [sayonari](https://twitter.com/sayonari) |
