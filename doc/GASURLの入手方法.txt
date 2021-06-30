@@ -1,0 +1,22 @@
+１．https://script.google.com/　にアクセス
+２．「新しいプロジェクト」でプロジェクト作成
+３．添付の「GASスクリプト.txt」の内容で書き換え
+　　→もとからscriptページに入ってるfunctionのひな型は全部消す！
+４．プロジェクトの保存
+　　→保存マークを押すか、Ctrl+s を押す
+５．デプロイ　→　新しいデプロイ
+６．デプロイタイプ　→　ウェブアプリ
+７．設定
+　　　次のユーザとして実行：自分
+　　　アクセスできるユーザ：全員
+
+　　→「デプロイ」を押す
+８．画面に出た「ウェブアプリ　URL」をコピー
+　（下のコピーをクリックしてもよい）
+９．config.py の　GAS_URL に、URLをコピペ
+　　例）GAS_URL         = 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec'
+１０．config.py を保存
+
+これでOK。
+正しく設定されていれば
+翻訳ちゃんの翻訳が、GoogleAppsScriptで行われるようになる。
