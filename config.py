@@ -30,5 +30,12 @@ gTTS_Out                = True
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
 ReadOnlyTheseLang       = []
 
+# Select the translate engine ('deepl' or 'google')
+Translator              = 'google'
+
+# Use Google Apps Script for tlanslating
+# e.g.) GAS_URL         = 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec'
+GAS_URL                 = ''
+
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
 Debug                   = False

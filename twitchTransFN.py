@@ -14,7 +14,11 @@ import time
 import shutil
 import re
 
+import requests
+import json
+
 import asyncio
+import deepl
 
 # from python_twitch_irc import TwitchIrc
 from twitchio.ext import commands
@@ -27,8 +31,10 @@ import signal
 # if not sys.warnoptions:
 #     warnings.simplefilter("ignore")
 
-version = '2.2.1'
+version = '2.3.0'
 '''
+v2.3.0  : google_trans_new 修正，
+v2.2.2  : GoogleAppsScriptを使って翻訳できるようにした
 v2.2.1  : !timerコマンド追加
 v2.2.0  : - 翻訳サーバの選択（ちゃらひろ先生による実装）
           - emoteを削除する
@@ -78,6 +84,9 @@ TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg",
                 "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ps", "fa",
                 "pl", "pt", "ma", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw",
                 "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
+
+deepl_lang_dict = {'de':'DE', 'en':'EN', 'fr':'FR', 'es':'ES', 'pt':'PT', 'it':'IT', 'nl':'NL', 'pl':'PL', 'ru':'RU', 'ja':'JA', 'zh-CN':'ZH'}
+
 
 ##########################################
 # load config text #######################
@@ -156,6 +165,38 @@ bot = commands.Bot(
     prefix              = "!",
     initial_channels    = [config.Twitch_Channel]
 )
+
+##########################################
+# 関連関数 ################################
+##########################################
+
+#####################################
+# Google Apps Script 翻訳
+def GAS_Trans(text, lang_source, lang_target):
+    if(text is None):
+        print("[GAS_Trans] text is empty")
+        return False
+
+    url = config.GAS_URL
+    payload = {
+        "text"  : text,
+        "source": lang_source,
+        "target": lang_target
+    }
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    response = requests.post(url, data=json.dumps(payload), headers=headers)
+
+    if(response.status_code == 200):
+        print("[GAS_Trans] post success!")
+        return response.text
+
+    print("[GAS_Trans] post failed...")
+    return False
+
+
 
 ##########################################
 # メイン動作 ##############################
@@ -255,15 +296,33 @@ async def event_message(ctx):
     print(in_text)
 
     # 言語検出 -----------------------
+    if config.Debug: print(f'--- Detect Language ---')
     lang_detect = ''
-    try:
-        # lang_detect = translator.detect(in_text).lang
-        lang_detect = translator.detect(in_text)[0]
-    except Exception as e:
-        if config.Debug: print(e)
+
+    # use google_trans_new ---
+    if not config.GAS_URL:
+        try:
+            lang_detect = translator.detect(in_text)[0]
+        except Exception as e:
+            if config.Debug: print(e)
+
+    # use GAS ---
+    else:
+        try:
+            tlans_text = GAS_Trans(in_text, '', config.lang_TransToHome)
+            if tlans_text == in_text:
+                lang_detect = config.lang_TransToHome
+            else:
+                lang_detect = 'GAS'
+        except Exception as e:
+            if config.Debug: print(e)      
+
+    if config.Debug: print(f'lang_detect:{lang_detect}')  
 
     # 翻訳先言語の選択 ---------------
+    if config.Debug: print(f'--- Select Destinate Language ---')
     lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
+    if config.Debug: print(f"lang_detect:{lang_detect} lang_dest:{lang_dest}")
 
     # 翻訳先言語が文中で指定されてたら変更 -------
     m = in_text.split(':')
@@ -284,15 +343,49 @@ async def event_message(ctx):
     #     in_text = in_text[0:int(config.TooLong_Cut)]
     if config.gTTS_In: gTTS_queue.put([in_text, lang_detect])
 
+    # 検出言語と翻訳先言語が同じだったら無視！
+    if lang_detect == lang_dest:
+        return
 
     ################################
     # 翻訳 --------------------------
+    if config.Debug: print(f'--- Translation ---')
     translatedText = ''
-    try:
-        # translatedText = translator.translate(in_text, src=lang_detect, dest=lang_dest).text
-        translatedText = translator.translate(in_text, lang_dest)
-    except Exception as e:
-        if config.Debug: print(e)
+
+    # use deepl --------------
+    # (try to use deepl, but if the language is not supported, text will be translated by google!)
+    if config.Translator == 'deepl':
+        try:
+            if lang_detect in deepl_lang_dict.keys() and lang_dest in deepl_lang_dict.keys():
+                translatedText = deepl.translate(source_language=deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text)
+                if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
+            else:
+                translatedText = translator.translate(in_text, lang_dest)
+                if config.Debug: print('[Google Tlanslate]')
+        except Exception as e:
+            if config.Debug: print(e)
+
+    # NOT use deepl ----------
+    elif config.Translator == 'google':
+        # use google_trans_new ---
+        if not config.GAS_URL:
+            try:
+                translatedText = translator.translate(in_text, lang_dest)
+                if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+            except Exception as e:
+                if config.Debug: print(e)
+
+        # use GAS ---
+        else:
+            try:
+                translatedText = GAS_Trans(in_text, '', lang_dest)
+                if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+            except Exception as e:
+                if config.Debug: print(e)    
+    
+    else:
+        print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
+        return
 
     # チャットへの投稿 ----------------
     # 投稿内容整形 & 投稿
@@ -461,7 +554,13 @@ def main():
         print('twitchTransFreeNext (Version: {})'.format(version))
         print('Connect to the channel   : {}'.format(config.Twitch_Channel))
         print('Translator Username      : {}'.format(config.Trans_Username))
-        print('Google Translate         : translate.google.{}'.format(url_suffix))
+        print('Translator ENGINE        : {}'.format(config.Translator))
+        
+        if not config.GAS_URL:
+            print('Google Translate         : translate.google.{}'.format(url_suffix))
+        else:
+            print(f'Translate using Google Apps Script')
+            if config.Debug: print(f'GAS URL: {config.GAS_URL}')
 
         # 作業用ディレクトリ削除 ＆ 作成 ----
         if config.Debug: print("making tmp dir...")
