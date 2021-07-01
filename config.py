@@ -1,9 +1,9 @@
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = 'xxx_target_channel_name_xxx'
+Twitch_Channel          = 'target_channel_name'
 
-Trans_Username          = 'xxx_trans_user_name_xxx'
-Trans_OAUTH             = 'xxxx_oauth_for_trans_user_xxxx'
+Trans_Username          = 'trans_user_name'
+Trans_OAUTH             = 'oauth_for_trans_user'
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
