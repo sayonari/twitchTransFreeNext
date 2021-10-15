@@ -341,7 +341,9 @@ async def event_message(ctx):
     # 音声合成（入力文） --------------
     # if len(in_text) > int(config.TooLong_Cut):
     #     in_text = in_text[0:int(config.TooLong_Cut)]
-    if config.gTTS_In: gTTS_queue.put([in_text, lang_detect])
+    if config.gTTS_In: 
+        if not config.SubscriberOnlyTTS or "subscriber=1" in ctx.raw_data:
+            gTTS_queue.put([in_text, lang_detect])
 
     # 検出言語と翻訳先言語が同じだったら無視！
     if lang_detect == lang_dest:
@@ -402,7 +404,9 @@ async def event_message(ctx):
     # 音声合成（出力文） --------------
     # if len(translatedText) > int(config.TooLong_Cut):
     #     translatedText = translatedText[0:int(config.TooLong_Cut)]
-    if config.gTTS_Out: gTTS_queue.put([translatedText, lang_dest])
+    if config.gTTS_Out: 
+        if not config.SubscriberOnlyTTS or "subscriber=1" in ctx.raw_data:
+            gTTS_queue.put([translatedText, lang_dest])
 
     print()
 

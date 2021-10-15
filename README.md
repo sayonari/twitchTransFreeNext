@@ -95,6 +95,7 @@ Debug                   = False
 | gTTS_Out | Bot output text will be read by TTS voice! |
 | ReadOnlyTheseLang | You can set the TTS language! |
 | Debug | You can check some error message using Debug mode (Debug = True)|
+| SubscriberOnlyTTS | Limit TTS usage to channel subscribers |
 
 
 # memo

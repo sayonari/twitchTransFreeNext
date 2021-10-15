@@ -39,3 +39,6 @@ GAS_URL                 = ''
 
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
 Debug                   = False
+
+# Limit TTS usage to subscribers only 
+SubscriberOnlyTTS       = False
