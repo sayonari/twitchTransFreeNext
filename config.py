@@ -1,9 +1,9 @@
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = 'target_channel_name'
+Twitch_Channel          = aks_pandaman
 
-Trans_Username          = 'trans_user_name'
-Trans_OAUTH             = 'oauth_for_trans_user'
+Trans_Username          = honyaku_bot
+Trans_OAUTH             = oauth:fovwldd00cu0zq44g56oef9m3r7qo9
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
