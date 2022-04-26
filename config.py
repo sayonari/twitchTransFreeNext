@@ -1,9 +1,9 @@
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = 'target_channel_name'
+Twitch_Channel          = 'imperialpaachan'
 
-Trans_Username          = 'trans_user_name'
-Trans_OAUTH             = 'oauth_for_trans_user'
+Trans_Username          = 'paaasuke'
+Trans_OAUTH             = 'oauth:oesvag7th3epc3wvgfpb7hq1edgmwt'
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
