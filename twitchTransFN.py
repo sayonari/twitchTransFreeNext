@@ -69,7 +69,7 @@ GoogleTranslate_suffix  = 'co.jp'
 #translator = Translator()
 # translator = google_translator(timeout=5)
 
-gTTS_queue = queue.Queue()
+synth_queue = queue.Queue()
 sound_queue = queue.Queue()
 
 # configure for Google TTS & play
@@ -113,7 +113,6 @@ except Exception as e:
 #     print(path)
 #     print('Please make [config.py] and put it with twitchTransFN')
 #     input() # stop for error!!
-
 
 ###################################
 # fix some config errors ##########
@@ -246,7 +245,7 @@ async def event_message(ctx):
     for w in Delete_Words:
         message = message.replace(w, '')
 
-    # emoteの削除 --------------------------    
+    # emoteの削除 --------------------------
     # エモート抜き出し
     emote_list = []
     if ctx.tags:
@@ -257,7 +256,7 @@ async def event_message(ctx):
                 if config.Debug: print()
                 if config.Debug: print(emo)
                 e_id, e_pos = emo.split(':')
-                
+
                 # 同一エモートが複数使われてたら，その数分，情報が入ってくる
                 # （例：1110537:4-14,16-26）
                 if config.Debug: print(f'e_pos:{e_pos}')
@@ -267,7 +266,7 @@ async def event_message(ctx):
                         if config.Debug: print(f'{e}')
                         if config.Debug: print(e.split('-'))
                         e_s, e_e = e.split('-')
-                        if config.Debug: print(ctx.content[int(e_s):int(e_e)+1]) 
+                        if config.Debug: print(ctx.content[int(e_s):int(e_e)+1])
 
                         # リストにエモートを追加
                         emote_list.append(ctx.content[int(e_s):int(e_e)+1])
@@ -275,11 +274,11 @@ async def event_message(ctx):
                 else:
                     e = e_pos
                     e_s, e_e = e.split('-')
-                    if config.Debug: print(ctx.content[int(e_s):int(e_e)+1]) 
+                    if config.Debug: print(ctx.content[int(e_s):int(e_e)+1])
 
                     # リストにエモートを追加
                     emote_list.append(ctx.content[int(e_s):int(e_e)+1])
-                
+
             # message(ctx.contextの編集用変数)から，エモート削除
             if config.Debug: print(f'message with emote:{message}')
             for w in sorted(emote_list, key=len, reverse=True):
@@ -315,9 +314,9 @@ async def event_message(ctx):
             else:
                 lang_detect = 'GAS'
         except Exception as e:
-            if config.Debug: print(e)      
+            if config.Debug: print(e)
 
-    if config.Debug: print(f'lang_detect:{lang_detect}')  
+    if config.Debug: print(f'lang_detect:{lang_detect}')
 
     # 翻訳先言語の選択 ---------------
     if config.Debug: print(f'--- Select Destinate Language ---')
@@ -335,13 +334,12 @@ async def event_message(ctx):
         # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
         if lang_detect in Ignore_Lang:
             return
-
     if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
 
     # 音声合成（入力文） --------------
     # if len(in_text) > int(config.TooLong_Cut):
     #     in_text = in_text[0:int(config.TooLong_Cut)]
-    if config.gTTS_In: gTTS_queue.put([in_text, lang_detect])
+    if config.TTS_In: synth_queue.put([in_text, lang_detect])
 
     # 検出言語と翻訳先言語が同じだったら無視！
     if lang_detect == lang_dest:
@@ -381,8 +379,8 @@ async def event_message(ctx):
                 translatedText = GAS_Trans(in_text, '', lang_dest)
                 if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
             except Exception as e:
-                if config.Debug: print(e)    
-    
+                if config.Debug: print(e)
+
     else:
         print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
         return
@@ -391,7 +389,7 @@ async def event_message(ctx):
     # 投稿内容整形 & 投稿
     out_text = translatedText
     if config.Show_ByName:
-        out_text = '{} [by {}]'.format(out_text, user)            
+        out_text = '{} [by {}]'.format(out_text, user)
     if config.Show_ByLang:
         out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
     await ctx.channel.send("/me " + out_text)
@@ -402,7 +400,7 @@ async def event_message(ctx):
     # 音声合成（出力文） --------------
     # if len(translatedText) > int(config.TooLong_Cut):
     #     translatedText = translatedText[0:int(config.TooLong_Cut)]
-    if config.gTTS_Out: gTTS_queue.put([translatedText, lang_dest])
+    if config.TTS_Out: synth_queue.put([translatedText, lang_dest])
 
     print()
 
@@ -448,20 +446,66 @@ async def timer(ctx):
     await asyncio.sleep(timer_min*60)
     await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) end! ####')
 
-#####################################
-# 音声合成 ＆ ファイル保存 ＆ ファイル削除
-def gTTS_play():
-    global gTTS_queue
+# CeVIOを呼び出すための関数を生成する関数
+# つまり cast 引数を与えることで、この関数から
+# 該当のCeVIOキャストにより音声再生を行える関数が帰ってきます。
+# 例("さとうささら"に"ささらちゃん読み上げて！"を読ませる呼び出し):
+#   f = CeVIO("さとうささら")
+#   f("ささらちゃん読み上げて！", "ja")
+# TODO: ただし第二引数(tl)は現状実装されていないため、
+# 該当キャストのデフォルト言語で読み上げは行われます。
+def CeVIO(cast):
+    # CeVIOとそれを呼び出すためのWin32COMの仕組みはWindowsにしかありません。
+    # そこでこのCeVIO関数内にimport実行を閉じることで
+    # ライブラリの不在を回避して他環境と互換させます。
+    import win32com.client
+    cevio = win32com.client.Dispatch("CeVIO.Talk.RemoteService2.ServiceControl2")
+    cevio.StartHost(False)
+    talker = win32com.client.Dispatch("CeVIO.Talk.RemoteService2.Talker2V40")
+    talker.Cast = cast
+    # in this routine, we will omit tl because CeVIO doesn't support language paramter.
+    def play(text, _):
+        try:
+            state = talker.Speak(text)
+            if config.Debug: print(f"text '{text}' has dispatched to CeVIO.")
+            state.Wait()
+        except Exception as e:
+            print('CeVIO error: TTS sound is not generated...')
+            if config.Debug: print(e.args)
+    return play
 
+# gTTSを利用して
+# 音声合成 ＆ ファイル保存 ＆ ファイル削除
+# までを行う音声合成の実行関数。
+def gTTS_play(text, tl):
+    try:
+        tts = gTTS(text, lang=tl)
+        tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
+        if config.Debug: print('gTTS file: {}'.format(tts_file))
+        tts.save(tts_file)
+        playsound(tts_file, True)
+        os.remove(tts_file)
+    except Exception as e:
+        print('gTTS error: TTS sound is not generated...')
+        if config.Debug: print(e.args)
+
+# 音声合成(TTS)の待ち受けスレッド
+# このスレッドにより各音声合成(TTS)が起動して音声読み上げされます。
+# このスレッドに対するメッセージ入力は
+# グローバルに定義されたsynth_queueを介して行います。
+def voice_synth():
+    global synth_queue
+
+    tts = Determine_TTS()
     while True:
-        q = gTTS_queue.get()
+        q = synth_queue.get()
         if q is None:
             time.sleep(1)
         else:
             text    = q[0]
             tl      = q[1]
 
-            if config.Debug: print('debug in gTTS')
+            if config.Debug: print('debug in Voice_Thread')
             if config.Debug: print(f'config.ReadOnlyTheseLang : {config.ReadOnlyTheseLang}')
             if config.Debug: print(f'tl not in config.ReadOnlyTheseLang : {tl not in config.ReadOnlyTheseLang}')
 
@@ -469,16 +513,15 @@ def gTTS_play():
             if config.ReadOnlyTheseLang and (tl not in config.ReadOnlyTheseLang):
                 continue
 
-            try:
-                tts = gTTS(text, lang=tl)
-                tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
-                if config.Debug: print('gTTS file: {}'.format(tts_file))
-                tts.save(tts_file)
-                playsound(tts_file, True)
-                os.remove(tts_file)
-            except Exception as e:
-                print('gTTS error: TTS sound is not generated...')
-                if config.Debug: print(e.args)
+            tts(text, tl)
+
+# どのTextToSpeechを利用するかをconfigから選択して再生用の関数を返す
+def Determine_TTS():
+    kind = config.TTS_Kind.strip().upper()
+    if kind == "CeVIO".upper():
+        return CeVIO(config.CeVIO_Cast)
+    else:
+        return gTTS_play
 
 #####################################
 # !sound 音声再生スレッド -------------
@@ -528,9 +571,9 @@ def CLEANMEIFOLDERS():
         base_path = os.path.abspath(".")
 
     if config.Debug: print(f'_MEI base path: {base_path}')
-    base_path = base_path.split("\\") 
-    base_path.pop(-1)                
-    temp_path = ""                    
+    base_path = base_path.split("\\")
+    base_path.pop(-1)
+    temp_path = ""
     for item in base_path:
         temp_path = temp_path + item + "\\"
 
@@ -538,9 +581,6 @@ def CLEANMEIFOLDERS():
     for item in mei_folders:
         if item.find('_MEI') != -1 and item != sys._MEIPASS + "\\":
             rmtree(item)
-
-
-
 
 # メイン処理 ###########################
 def main():
@@ -555,7 +595,7 @@ def main():
         print('Connect to the channel   : {}'.format(config.Twitch_Channel))
         print('Translator Username      : {}'.format(config.Trans_Username))
         print('Translator ENGINE        : {}'.format(config.Translator))
-        
+
         if not config.GAS_URL:
             print('Google Translate         : translate.google.{}'.format(url_suffix))
         else:
@@ -572,10 +612,10 @@ def main():
         if config.Debug: print("made tmp dir.")
 
         # 音声合成スレッド起動 ################
-        if config.Debug: print("run, tts thread...")
-        if config.gTTS_In or  config.gTTS_Out:
-            thread_gTTS = threading.Thread(target=gTTS_play)
-            thread_gTTS.start()
+        if config.Debug: print("run, voice synth thread...")
+        if config.TTS_In or  config.TTS_Out:
+            thread_voice = threading.Thread(target=voice_synth)
+            thread_voice.start()
 
         # 音声再生スレッド起動 ################
         if config.Debug: print("run, sound play thread...")

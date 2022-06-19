@@ -3,3 +3,4 @@ gTTS~=2.2
 playsound~=1.3
 -e git+https://github.com/ptrstn/deepl-translate#egg=deepl-1.0.0
 twitchio~=2.0
+pywin32;platform_system == 'Windows'

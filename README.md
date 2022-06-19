@@ -91,8 +91,10 @@ Debug                   = False
 | Ignore_Users | You can set some users : [Nightbot, BikuBikuTest, someotheruser, ...] |
 | Ignore_Line | If the words are in message, the message will be ignored.|
 | Delete_Words | The words will be removed from message. |
-| gTTS_In | Input text will be read by TTS voice! |
-| gTTS_Out | Bot output text will be read by TTS voice! |
+| TTS_Kind | The kind of TTS, "gTTS"(default) or "CeVIO". If you want to use CeVIO, you need to install CeVIO AI in your local computer. |
+| TTS_In | Input text will be read by TTS voice! |
+| TTS_Out | Bot output text will be read by TTS voice! |
+| CeVIO_Cast | The cast name of CeVIO, for example "さとうささら". This option is enabled only when TTS_Kind = "CeVIO". |
 | ReadOnlyTheseLang | You can set the TTS language! |
 | Debug | You can check some error message using Debug mode (Debug = True)|
 
@@ -131,7 +133,7 @@ The developer of ...
 | Title | Automatic Translator for Twitch Chat (Next Generation) |
 |--|--|
 | Developer | husband_sayonari_omega |
-|github | https://github.com/sayonari/twitchTransFreeNext |
+| github | https://github.com/sayonari/twitchTransFreeNext |
 | Webpage | http://www.sayonari.com/trans_asr/ |
 | mail | sayonari@gmail.com |
 | Twitter | [sayonari](https://twitter.com/sayonari) |
