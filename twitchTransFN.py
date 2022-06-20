@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #from googletrans import Translator
-from google_trans_new import google_translator, constant
+from async_google_trans_new import google_translator, constant
 
 from gtts import gTTS
 from playsound import playsound
@@ -100,7 +100,7 @@ except Exception as e:
     print('Please make [config.py] and put it with twitchTransFN')
     input() # stop for error!!
 
-# # For [MacOS & pyinstaller] 
+# # For [MacOS & pyinstaller]
 # from AppKit import NSBundle
 
 # path = NSBundle.mainBundle().pathForResource_ofType_("config", "py")
@@ -155,17 +155,6 @@ else:
 
 translator = google_translator(url_suffix=url_suffix)
 
-####################################################
-#####################################
-# Simple echo bot.
-bot = commands.Bot(
-    irc_token           = "oauth:" + config.Trans_OAUTH,
-    client_id           = "",
-    nick                = config.Trans_Username,
-    prefix              = "!",
-    initial_channels    = [config.Twitch_Channel]
-)
-
 ##########################################
 # 関連関数 ################################
 ##########################################
@@ -202,251 +191,265 @@ def GAS_Trans(text, lang_source, lang_target):
 # メイン動作 ##############################
 ##########################################
 
-# 起動時 ####################
-@bot.event
-async def event_ready():
-    'Called once when the bot goes online.'
-    print(f"{config.Trans_Username} is online!")
-    ws = bot._ws  # this is only needed to send messages within event_ready
-    await ws.send_privmsg(config.Twitch_Channel, f"/color {config.Trans_TextColor}")
-    await ws.send_privmsg(config.Twitch_Channel, f"/me has landed!")
+class Bot(commands.Bot):
 
+    def __init__(self):
+        super().__init__(
+            token               = "oauth:" + config.Trans_OAUTH,
+            client_id           = "",
+            nick                = config.Trans_Username,
+            prefix              = "!",
+            initial_channels    = [config.Twitch_Channel]
+        )
 
-# メッセージを受信したら ####################
-@bot.event
-async def event_message(ctx):
-    'Runs every time a message is sent in chat.'
+    # 起動時 ####################
+    async def event_ready(self):
+        'Called once when the bot goes online.'
+        print(f"{config.Trans_Username} is online!")
+        channel = self.get_channel(config.Twitch_Channel)
+        await channel.send(f"/color {config.Trans_TextColor}")
+        await channel.send(f"/me has landed!")
 
-    # コマンド処理 -----------------------
-    await bot.handle_commands(ctx)
+    # メッセージを受信したら ####################
+    async def event_message(self, msg):
+        'Runs every time a message is sent in chat.'
 
-    if ctx.content.startswith('!'):
-        return
-
-    # 変数入れ替え ------------------------
-    message = ctx.content
-    user    = ctx.author.name.lower()
-
-    # # bot自身の投稿は無視 -----------------
-    if config.Debug: print(f'echo: {ctx.echo}, {ctx.content}')
-    if ctx.echo:
-        return
-
-    # 無視ユーザリストチェック -------------
-    print('USER:{}'.format(user))
-    if user in Ignore_Users:
-        return
-
-    # 無視テキストリストチェック -----------
-    for w in Ignore_Line:
-        if w in message:
+        # # bot自身の投稿は無視 -----------------
+        if config.Debug: print(f'echo: {msg.echo}, {msg.content}')
+        if msg.echo:
             return
 
-    # 削除単語リストチェック --------------
-    for w in Delete_Words:
-        message = message.replace(w, '')
+        # コマンド処理 -----------------------
+        if not msg.echo:
+            await self.handle_commands(msg)
 
-    # emoteの削除 --------------------------    
-    # エモート抜き出し
-    emote_list = []
-    if ctx.tags:
-        if ctx.tags['emotes']:
-            # エモートの種類数分 '/' で分割されて提示されてくる
-            emotes_s = ctx.tags['emotes'].split('/')
-            for emo in emotes_s:
-                if config.Debug: print()
-                if config.Debug: print(emo)
-                e_id, e_pos = emo.split(':')
-                
-                # 同一エモートが複数使われてたら，その数分，情報が入ってくる
-                # （例：1110537:4-14,16-26）
-                if config.Debug: print(f'e_pos:{e_pos}')
-                if ',' in e_pos:
-                    ed_pos = e_pos.split(',')
-                    for e in ed_pos:
-                        if config.Debug: print(f'{e}')
-                        if config.Debug: print(e.split('-'))
+        if msg.content.startswith('!'):
+            return
+
+        # 変数入れ替え ------------------------
+        message = msg.content
+        user    = msg.author.name.lower()
+
+        # 無視ユーザリストチェック -------------
+        print('USER:{}'.format(user))
+        if user in Ignore_Users:
+            return
+
+        # 無視テキストリストチェック -----------
+        for w in Ignore_Line:
+            if w in message:
+                return
+
+        # 削除単語リストチェック --------------
+        for w in Delete_Words:
+            message = message.replace(w, '')
+
+        # emoteの削除 --------------------------
+        # エモート抜き出し
+        emote_list = []
+        if msg.tags:
+            if msg.tags['emotes']:
+                # エモートの種類数分 '/' で分割されて提示されてくる
+                emotes_s = msg.tags['emotes'].split('/')
+                for emo in emotes_s:
+                    if config.Debug: print()
+                    if config.Debug: print(emo)
+                    e_id, e_pos = emo.split(':')
+
+                    # 同一エモートが複数使われてたら，その数分，情報が入ってくる
+                    # （例：1110537:4-14,16-26）
+                    if config.Debug: print(f'e_pos:{e_pos}')
+                    if ',' in e_pos:
+                        ed_pos = e_pos.split(',')
+                        for e in ed_pos:
+                            if config.Debug: print(f'{e}')
+                            if config.Debug: print(e.split('-'))
+                            e_s, e_e = e.split('-')
+                            if config.Debug: print(msg.content[int(e_s):int(e_e)+1])
+
+                            # リストにエモートを追加
+                            emote_list.append(msg.content[int(e_s):int(e_e)+1])
+
+                    else:
+                        e = e_pos
                         e_s, e_e = e.split('-')
-                        if config.Debug: print(ctx.content[int(e_s):int(e_e)+1]) 
+                        if config.Debug: print(msg.content[int(e_s):int(e_e)+1])
 
                         # リストにエモートを追加
-                        emote_list.append(ctx.content[int(e_s):int(e_e)+1])
+                        emote_list.append(msg.content[int(e_s):int(e_e)+1])
 
-                else:
-                    e = e_pos
-                    e_s, e_e = e.split('-')
-                    if config.Debug: print(ctx.content[int(e_s):int(e_e)+1]) 
+                # message(msg.contextの編集用変数)から，エモート削除
+                if config.Debug: print(f'message with emote:{message}')
+                for w in sorted(emote_list, key=len, reverse=True):
+                    if config.Debug: print(w)
+                    message = message.replace(w, '')
 
-                    # リストにエモートを追加
-                    emote_list.append(ctx.content[int(e_s):int(e_e)+1])
-                
-            # message(ctx.contextの編集用変数)から，エモート削除
-            if config.Debug: print(f'message with emote:{message}')
-            for w in sorted(emote_list, key=len, reverse=True):
-                if config.Debug: print(w)
-                message = message.replace(w, '')
+                if config.Debug: print(f'message without emote:{message}')
 
-            if config.Debug: print(f'message without emote:{message}')
+        # 複数空文字を一つにまとめる --------
+        message = " ".join( message.split() )
 
-    # 複数空文字を一つにまとめる --------
-    message = " ".join( message.split() )
+        # 入力 --------------------------
+        in_text = message
+        print(in_text)
 
-    # 入力 --------------------------
-    in_text = message
-    print(in_text)
+        # 言語検出 -----------------------
+        if config.Debug: print(f'--- Detect Language ---')
+        lang_detect = ''
 
-    # 言語検出 -----------------------
-    if config.Debug: print(f'--- Detect Language ---')
-    lang_detect = ''
-
-    # use google_trans_new ---
-    if not config.GAS_URL:
-        try:
-            lang_detect = translator.detect(in_text)[0]
-        except Exception as e:
-            if config.Debug: print(e)
-
-    # use GAS ---
-    else:
-        try:
-            tlans_text = GAS_Trans(in_text, '', config.lang_TransToHome)
-            if tlans_text == in_text:
-                lang_detect = config.lang_TransToHome
-            else:
-                lang_detect = 'GAS'
-        except Exception as e:
-            if config.Debug: print(e)      
-
-    if config.Debug: print(f'lang_detect:{lang_detect}')  
-
-    # 翻訳先言語の選択 ---------------
-    if config.Debug: print(f'--- Select Destinate Language ---')
-    lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
-    if config.Debug: print(f"lang_detect:{lang_detect} lang_dest:{lang_dest}")
-
-    # 翻訳先言語が文中で指定されてたら変更 -------
-    m = in_text.split(':')
-    if len(m) >= 2:
-        if m[0] in TargetLangs:
-            lang_dest = m[0]
-            in_text = ':'.join(m[1:])
-    else:
-        # 翻訳先が (:)で指定されてなくて、
-        # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
-        if lang_detect in Ignore_Lang:
-            return
-
-    if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
-
-    # 音声合成（入力文） --------------
-    # if len(in_text) > int(config.TooLong_Cut):
-    #     in_text = in_text[0:int(config.TooLong_Cut)]
-    if config.gTTS_In: gTTS_queue.put([in_text, lang_detect])
-
-    # 検出言語と翻訳先言語が同じだったら無視！
-    if lang_detect == lang_dest:
-        return
-
-    ################################
-    # 翻訳 --------------------------
-    if config.Debug: print(f'--- Translation ---')
-    translatedText = ''
-
-    # use deepl --------------
-    # (try to use deepl, but if the language is not supported, text will be translated by google!)
-    if config.Translator == 'deepl':
-        try:
-            if lang_detect in deepl_lang_dict.keys() and lang_dest in deepl_lang_dict.keys():
-                translatedText = deepl.translate(source_language=deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text)
-                if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
-            else:
-                translatedText = translator.translate(in_text, lang_dest)
-                if config.Debug: print('[Google Tlanslate]')
-        except Exception as e:
-            if config.Debug: print(e)
-
-    # NOT use deepl ----------
-    elif config.Translator == 'google':
         # use google_trans_new ---
         if not config.GAS_URL:
             try:
-                translatedText = translator.translate(in_text, lang_dest)
-                if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                detected = await translator.detect(in_text)
+                lang_detect = detected[0]
             except Exception as e:
                 if config.Debug: print(e)
 
         # use GAS ---
         else:
             try:
-                translatedText = GAS_Trans(in_text, '', lang_dest)
-                if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+                tlans_text = GAS_Trans(in_text, '', config.lang_TransToHome)
+                if tlans_text == in_text:
+                    lang_detect = config.lang_TransToHome
+                else:
+                    lang_detect = 'GAS'
             except Exception as e:
-                if config.Debug: print(e)    
-    
-    else:
-        print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
-        return
+                if config.Debug: print(e)
 
-    # チャットへの投稿 ----------------
-    # 投稿内容整形 & 投稿
-    out_text = translatedText
-    if config.Show_ByName:
-        out_text = '{} [by {}]'.format(out_text, user)            
-    if config.Show_ByLang:
-        out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
-    await ctx.channel.send("/me " + out_text)
+        if config.Debug: print(f'lang_detect:{lang_detect}')
 
-    # コンソールへの表示 --------------
-    print(out_text)
+        # 翻訳先言語の選択 ---------------
+        if config.Debug: print(f'--- Select Destinate Language ---')
+        lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
+        if config.Debug: print(f"lang_detect:{lang_detect} lang_dest:{lang_dest}")
 
-    # 音声合成（出力文） --------------
-    # if len(translatedText) > int(config.TooLong_Cut):
-    #     translatedText = translatedText[0:int(config.TooLong_Cut)]
-    if config.gTTS_Out: gTTS_queue.put([translatedText, lang_dest])
+        # 翻訳先言語が文中で指定されてたら変更 -------
+        m = in_text.split(':')
+        if len(m) >= 2:
+            if m[0] in TargetLangs:
+                lang_dest = m[0]
+                in_text = ':'.join(m[1:])
+        else:
+            # 翻訳先が (:)で指定されてなくて、
+            # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
+            if lang_detect in Ignore_Lang:
+                return
 
-    print()
+        if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
 
-##############################
-# コマンド ####################
-@bot.command(name='ver')
-async def ver(ctx):
-    await ctx.send('this is tTFN. ver: ' + version)
+        # 音声合成（入力文） --------------
+        # if len(in_text) > int(config.TooLong_Cut):
+        #     in_text = in_text[0:int(config.TooLong_Cut)]
+        if config.gTTS_In: gTTS_queue.put([in_text, lang_detect])
 
-@bot.command(name='sound')
-async def sound(ctx):
-    sound_name = ctx.content.strip().split(" ")[1]
-    sound_queue.put(sound_name)
+        # 検出言語と翻訳先言語が同じだったら無視！
+        if lang_detect == lang_dest:
+            return
 
-@bot.command(name='timer')
-async def timer(ctx):
-    timer_min = 0
-    timer_name = ''
+        ################################
+        # 翻訳 --------------------------
+        if config.Debug: print(f'--- Translation ---')
+        translatedText = ''
 
-    d = ctx.content.strip().split(" ")
-    if len(d) == 2:
-        try:
-            timer_min = int(d[1])
-        except Exception as e:
-                print('timer error: !timer [min] [name]')
-                if config.Debug: print(e.args)
-                return 0
+        # use deepl --------------
+        # (try to use deepl, but if the language is not supported, text will be translated by google!)
+        if config.Translator == 'deepl':
+            try:
+                if lang_detect in deepl_lang_dict.keys() and lang_dest in deepl_lang_dict.keys():
+                    translatedText = deepl.translate(source_language=deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text)
+                    if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
+                else:
+                    translatedText = await translator.translate(in_text, lang_dest)
+                    if config.Debug: print('[Google Tlanslate]')
+            except Exception as e:
+                if config.Debug: print(e)
 
-    elif len(d) == 3:
-        try:
-            timer_min = int(d[1])
-            timer_name = d[2]
-        except Exception as e:
-                print('timer error: !timer [min] [name]')
-                if config.Debug: print(e.args)
-                return 0
+        # NOT use deepl ----------
+        elif config.Translator == 'google':
+            # use google_trans_new ---
+            if not config.GAS_URL:
+                try:
+                    translatedText = await translator.translate(in_text, lang_dest)
+                    if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                except Exception as e:
+                    if config.Debug: print(e)
 
-    else:
-        print(f'command error [{ctx.content}]')
-        return 0
+            # use GAS ---
+            else:
+                try:
+                    translatedText = GAS_Trans(in_text, '', lang_dest)
+                    if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+                except Exception as e:
+                    if config.Debug: print(e)
 
-    await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) start! ####')
-    await asyncio.sleep(timer_min*60)
-    await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) end! ####')
+        else:
+            print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
+            return
+
+        # チャットへの投稿 ----------------
+        # 投稿内容整形 & 投稿
+        out_text = translatedText
+        if config.Show_ByName:
+            out_text = '{} [by {}]'.format(out_text, user)
+        if config.Show_ByLang:
+            out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
+
+        # コンソールへの表示 --------------
+        print(out_text)
+
+        await msg.channel.send("/me " + out_text)
+
+
+        # 音声合成（出力文） --------------
+        # if len(translatedText) > int(config.TooLong_Cut):
+        #     translatedText = translatedText[0:int(config.TooLong_Cut)]
+        if config.gTTS_Out: gTTS_queue.put([translatedText, lang_dest])
+
+        print()
+
+    ##############################
+    # コマンド ####################
+    @commands.command(name='ver')
+    async def ver(self, ctx):
+        await ctx.send('this is tTFN. ver: ' + version)
+
+    @commands.command(name='sound')
+    async def sound(ctx):
+        sound_name = ctx.content.strip().split(" ")[1]
+        sound_queue.put(sound_name)
+
+    @commands.command(name='timer')
+    async def timer(ctx):
+        timer_min = 0
+        timer_name = ''
+
+        d = ctx.content.strip().split(" ")
+        if len(d) == 2:
+            try:
+                timer_min = int(d[1])
+            except Exception as e:
+                    print('timer error: !timer [min] [name]')
+                    if config.Debug: print(e.args)
+                    return 0
+
+        elif len(d) == 3:
+            try:
+                timer_min = int(d[1])
+                timer_name = d[2]
+            except Exception as e:
+                    print('timer error: !timer [min] [name]')
+                    if config.Debug: print(e.args)
+                    return 0
+
+        else:
+            print(f'command error [{ctx.content}]')
+            return 0
+
+        await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) start! ####')
+        await asyncio.sleep(timer_min*60)
+        await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) end! ####')
+
+bot = Bot()
 
 #####################################
 # 音声合成 ＆ ファイル保存 ＆ ファイル削除
@@ -528,9 +531,9 @@ def CLEANMEIFOLDERS():
         base_path = os.path.abspath(".")
 
     if config.Debug: print(f'_MEI base path: {base_path}')
-    base_path = base_path.split("\\") 
-    base_path.pop(-1)                
-    temp_path = ""                    
+    base_path = base_path.split("\\")
+    base_path.pop(-1)
+    temp_path = ""
     for item in base_path:
         temp_path = temp_path + item + "\\"
 
@@ -555,7 +558,7 @@ def main():
         print('Connect to the channel   : {}'.format(config.Twitch_Channel))
         print('Translator Username      : {}'.format(config.Trans_Username))
         print('Translator ENGINE        : {}'.format(config.Translator))
-        
+
         if not config.GAS_URL:
             print('Google Translate         : translate.google.{}'.format(url_suffix))
         else:
