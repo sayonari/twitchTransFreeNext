@@ -130,6 +130,15 @@ if config.Trans_OAUTH.startswith('oauth:'):
     # print("Find 'oauth:' at OAUTH text! I remove 'oauth:' from 'config:Trans_OAUTH'")
     config.Trans_OAUTH = config.Trans_OAUTH[6:]
 
+# convert depreated gTTS_In, gTTS_Out => TTS_in, TTS_Out ------
+if hasattr(config, 'gTTS_In') and not hasattr(config, 'TTS_In'):
+    print('[warn] gTTS_In is already deprecated, please use TTS_In instead.')
+    config.TTS_In = config.gTTS_In
+
+if hasattr(config, 'gTTS_Out') and not hasattr(config, 'TTS_Out'):
+    print('[warn] gTTS_Out is already deprecated, please use TTS_Out instead.')
+    config.TTS_Out = config.gTTS_Out
+
 
 # 無視言語リストの準備 ################
 Ignore_Lang = [x.strip() for x in config.Ignore_Lang]

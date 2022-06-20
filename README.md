@@ -94,6 +94,8 @@ Debug                   = False
 | TTS_Kind | The kind of TTS, "gTTS"(default) or "CeVIO". If you want to use CeVIO, you need to install CeVIO AI in your local computer. |
 | TTS_In | Input text will be read by TTS voice! |
 | TTS_Out | Bot output text will be read by TTS voice! |
+| gTTS_In | It's deprecated config, please use TTS_In instead. |
+| gTTS_Out | It's deprecated config, please use TTS_Out instead. |
 | CeVIO_Cast | The cast name of CeVIO, for example "さとうささら". This option is enabled only when TTS_Kind = "CeVIO". |
 | ReadOnlyTheseLang | You can set the TTS language! |
 | Debug | You can check some error message using Debug mode (Debug = True)|
