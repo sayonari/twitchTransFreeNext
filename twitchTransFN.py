@@ -311,7 +311,8 @@ class Bot(commands.Bot):
         # use google_trans_new ---
         if not config.GAS_URL:
             try:
-                lang_detect = translator.detect(in_text)[0]
+                detected = await translator.detect(in_text)
+                lang_detect = detected[0]
             except Exception as e:
                 if config.Debug: print(e)
 
@@ -326,12 +327,6 @@ class Bot(commands.Bot):
             except Exception as e:
                 if config.Debug: print(e)
 
-                  
-                  
-                  
-                  
-                  
-                  
         if config.Debug: print(f'lang_detect:{lang_detect}')
 
         # 翻訳先言語の選択 ---------------
@@ -375,7 +370,7 @@ class Bot(commands.Bot):
                     translatedText = deepl.translate(source_language=deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text)
                     if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
                 else:
-                    translatedText = translator.translate(in_text, lang_dest)
+                    translatedText = await translator.translate(in_text, lang_dest)
                     if config.Debug: print('[Google Tlanslate]')
             except Exception as e:
                 if config.Debug: print(e)
@@ -419,7 +414,7 @@ class Bot(commands.Bot):
         # 音声合成（出力文） --------------
         # if len(translatedText) > int(config.TooLong_Cut):
         #     translatedText = translatedText[0:int(config.TooLong_Cut)]
-        if config.gTTS_Out: gTTS_queue.put([translatedText, lang_dest])
+        if config.TTS_Out: synth_queue.put([translatedText, lang_dest])
 
         print()                  
 
