@@ -22,9 +22,11 @@ Ignore_Line             = ['http', 'BikuBikuTest', '888', '８８８']
 Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
-# gTTS_In:User Input Text, gTTS_Out:Bot Output Text
-gTTS_In                 = True
-gTTS_Out                = True
+# TTS_In:User Input Text, TTS_Out:Bot Output Text
+TTS_In                  = True
+TTS_Out                 = True
+TTS_Kind                = "gTTS" # You can choice "CeVIO" if you want to use CeVIO as TTS.
+# CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
 
 # if you make TTS for only few lang, please add langID in the list
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!

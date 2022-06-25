@@ -1,6 +1,6 @@
 async_google_trans_new==1.4.5
 gTTS==2.2.4
 playsound==1.2.2
-deepl==1.8.0
+deepl-translate==1.2.0
 twitchio==2.3.0
-
+pywin32;platform_system == 'Windows'
