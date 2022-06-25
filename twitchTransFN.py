@@ -95,6 +95,7 @@ deepl_lang_dict = {'de':'DE', 'en':'EN', 'fr':'FR', 'es':'ES', 'pt':'PT', 'it':'
 # load config text #######################
 import importlib
 
+# For [directly run from Python script at Windows, MacOS] -----------------------
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
     config = importlib.import_module('config')
@@ -103,7 +104,7 @@ except Exception as e:
     print('Please make [config.py] and put it with twitchTransFN')
     input() # stop for error!!
 
-# # For [MacOS & pyinstaller]
+# # For [MacOS & pyinstaller] --------------------------------------------------
 # from AppKit import NSBundle
 
 # path = NSBundle.mainBundle().pathForResource_ofType_("config", "py")
