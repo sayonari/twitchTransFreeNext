@@ -1,0 +1,58 @@
+name: build binaries
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build_matrix:
+    strategy:
+      matrix:
+        env: [linux, windows, macos]
+        include:
+          - env: linux
+            os: ubuntu-latest
+            bin: twitchTransFN
+            archive: tar.gz
+          - env: windows
+            os: windows-latest
+            bin: twitchTransFN.exe
+            archive: zip
+          - env: macos
+            os: macos-latest
+            bin: twitchTransFN.command
+            archive: tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with: { python-version: 3.8 }
+
+      - name: install pyinstaller
+        run: python -m pip install --upgrade pip PyInstaller
+
+      - name: install requirements
+        run: python -m pip install -r requirements.txt
+
+      - name: build
+        run: pyinstaller --exclude-module config --name ${{ matrix.bin }} -F twitchTransFN.py
+
+      - name: archive with zip
+        if: ${{ matrix.archive == 'zip' }}
+        run: powershell Compress-Archive -Path dist/${{ matrix.bin }} -DestinationPath ${{ matrix.env }}.zip
+
+      - name: archive with tar.gz
+        if: ${{ matrix.archive == 'tar.gz' }}
+        run: tar -C dist -pczvf ${{ matrix.env }}.tar.gz ${{ matrix.bin }}
+
+      - name: update github release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: false
+          files: ${{ matrix.env }}.${{ matrix.archive }}
