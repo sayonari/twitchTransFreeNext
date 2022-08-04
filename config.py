@@ -39,5 +39,10 @@ Translator              = 'google'
 # e.g.) GAS_URL         = 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec'
 GAS_URL                 = ''
 
+# Enter the suffix of the Google Translate URL you normally use.
+# Example: translate.google.co.jp -> 'co.jp'
+#          translate.google.com   -> 'com'
+GoogleTranslate_suffix  = 'co.jp'
+
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
 Debug                   = False
