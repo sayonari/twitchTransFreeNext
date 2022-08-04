@@ -344,8 +344,18 @@ class Bot(commands.Bot):
                     translatedText = deepl.translate(source_language=deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text)
                     if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
                 else:
-                    translatedText = await translator.translate(in_text, lang_dest)
-                    if config.Debug: print('[Google Tlanslate]')
+                    if not config.GAS_URL:
+                        try:
+                            translatedText = await translator.translate(in_text, lang_dest)
+                            if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                        except Exception as e:
+                            if config.Debug: print(e)
+                    else:
+                        try:
+                            translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
+                            if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+                        except Exception as e:
+                            if config.Debug: print(e)
             except Exception as e:
                 if config.Debug: print(e)
 
