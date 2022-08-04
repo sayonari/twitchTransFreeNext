@@ -56,14 +56,6 @@ v2.0.4  :
 v2.0.3  : いろいろ実装した
 '''
 
-
-# 設定 ###############################
-# Enter the suffix of the Google Translate URL you normally use.
-# Example: translate.google.co.jp -> 'co.jp'
-#          translate.google.com   -> 'com'
-GoogleTranslate_suffix  = 'co.jp'
-
-
 #####################################
 # 初期設定 ###########################
 
@@ -115,19 +107,6 @@ except Exception as e:
 
 ###################################
 # fix some config errors ##########
-# lowercase channel and username ------
-config.Twitch_Channel = config.Twitch_Channel.lower()
-config.Trans_Username = config.Trans_Username.lower()
-
-# remove "#" mark ------
-if config.Twitch_Channel.startswith('#'):
-    # print("Find # mark at channel name! I remove '#' from 'config:Twitch_Channel'")
-    config.Twitch_Channel = config.Twitch_Channel[1:]
-
-# remove "oauth:" mark ------
-if config.Trans_OAUTH.startswith('oauth:'):
-    # print("Find 'oauth:' at OAUTH text! I remove 'oauth:' from 'config:Trans_OAUTH'")
-    config.Trans_OAUTH = config.Trans_OAUTH[6:]
 
 # convert depreated gTTS_In, gTTS_Out => TTS_in, TTS_Out ------
 if hasattr(config, 'gTTS_In') and not hasattr(config, 'TTS_In'):
@@ -155,10 +134,13 @@ Ignore_Line = [x.strip() for x in config.Ignore_Line]
 Delete_Words = [x.strip() for x in config.Delete_Words]
 
 # suffixのチェック、google_trans_newインスタンス生成
-if GoogleTranslate_suffix not in URL_SUFFIX_LIST:
-    url_suffix = 'co.jp'
+if hasattr(config, 'GoogleTranslate_suffix'):
+    if config.GoogleTranslate_suffix not in URL_SUFFIX_LIST:
+        url_suffix = 'co.jp'
+    else:
+        url_suffix = config.GoogleTranslate_suffix
 else:
-    url_suffix = GoogleTranslate_suffix
+    url_suffix = 'co.jp'
 
 translator = AsyncTranslator(url_suffix=url_suffix)
 
@@ -202,18 +184,15 @@ class Bot(commands.Bot):
 
     def __init__(self):
         super().__init__(
-            token               = "oauth:" + config.Trans_OAUTH,
-            client_id           = "",
-            nick                = config.Trans_Username,
+            token               = config.Trans_OAUTH,
             prefix              = "!",
             initial_channels    = [config.Twitch_Channel]
         )
 
     # 起動時 ####################
-    async def event_ready(self):
+    async def event_channel_joined(self, channel):
         'Called once when the bot goes online.'
-        print(f"{config.Trans_Username} is online!")
-        channel = self.get_channel(config.Twitch_Channel)
+        print(f"{self.nick} is online!")
         await channel.send(f"/color {config.Trans_TextColor}")
         await channel.send(f"/me has landed!")
 
