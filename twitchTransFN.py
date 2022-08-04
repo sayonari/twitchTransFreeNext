@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#from googletrans import Translator
 from async_google_trans_new import google_translator, constant
 
 from gtts import gTTS
@@ -20,11 +19,9 @@ import json
 import asyncio
 import deepl
 
-# from python_twitch_irc import TwitchIrc
 from twitchio.ext import commands
 
 import sys
-from sys import exit
 import signal
 
 # import warnings
@@ -69,8 +66,6 @@ GoogleTranslate_suffix  = 'co.jp'
 
 #####################################
 # 初期設定 ###########################
-#translator = Translator()
-# translator = google_translator(timeout=5)
 
 synth_queue = queue.Queue()
 sound_queue = queue.Queue()
@@ -243,7 +238,7 @@ class Bot(commands.Bot):
         user    = msg.author.name.lower()
 
         # 無視ユーザリストチェック -------------
-        print('USER:{}'.format(user))
+        if config.Debug: print('USER:{}'.format(user))
         if user in Ignore_Users:
             return
 
@@ -396,7 +391,7 @@ class Bot(commands.Bot):
 
         else:
             print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
-            return                  
+            return
 
         # チャットへの投稿 ----------------
         # 投稿内容整形 & 投稿
@@ -416,8 +411,6 @@ class Bot(commands.Bot):
         # if len(translatedText) > int(config.TooLong_Cut):
         #     translatedText = translatedText[0:int(config.TooLong_Cut)]
         if config.TTS_Out: synth_queue.put([translatedText, lang_dest])
-
-        print()                  
 
 
     ##############################
