@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from async_google_trans_new import google_translator, constant
+from async_google_trans_new import AsyncTranslator, constant
 
 from gtts import gTTS
 from playsound import playsound
@@ -160,7 +160,7 @@ if GoogleTranslate_suffix not in URL_SUFFIX_LIST:
 else:
     url_suffix = GoogleTranslate_suffix
 
-translator = google_translator(url_suffix=url_suffix)
+translator = AsyncTranslator(url_suffix=url_suffix)
 
 ##########################################
 # 関連関数 ################################
