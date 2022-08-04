@@ -268,6 +268,9 @@ class Bot(commands.Bot):
         for w in Delete_Words:
             message = message.replace(w, '')
 
+        # @ユーザー名を削除
+        message = re.sub(r'@\S+', '', message)
+
         # 複数空文字を一つにまとめる --------
         message = " ".join( message.split() )
 
