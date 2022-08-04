@@ -296,6 +296,9 @@ class Bot(commands.Bot):
         # 複数空文字を一つにまとめる --------
         message = " ".join( message.split() )
 
+        if not message:
+            return
+
         # 入力 --------------------------
         in_text = message
         print(in_text)
