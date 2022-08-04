@@ -13,9 +13,6 @@ import time
 import shutil
 import re
 
-import requests
-import json
-
 import asyncio
 import deepl
 
@@ -150,9 +147,9 @@ translator = AsyncTranslator(url_suffix=url_suffix)
 
 #####################################
 # Google Apps Script 翻訳
-def GAS_Trans(text, lang_source, lang_target):
-    if(text is None):
-        print("[GAS_Trans] text is empty")
+async def GAS_Trans(session, text, lang_source, lang_target):
+    if text is None:
+        config.Debug: print("[GAS_Trans] text is empty")
         return False
 
     url = config.GAS_URL
@@ -165,14 +162,13 @@ def GAS_Trans(text, lang_source, lang_target):
         'Content-Type': 'application/json',
     }
 
-    response = requests.post(url, data=json.dumps(payload), headers=headers)
-
-    if(response.status_code == 200):
-        print("[GAS_Trans] post success!")
-        return response.text
-
-    print("[GAS_Trans] post failed...")
-    return False
+    async with session.post(url, json=payload, headers=headers) as res:
+        if res.status == 200:
+            if config.Debug: print("[GAS_Trans] post success!")
+            return await res.text()
+        else:
+            if config.Debug: print("[GAS_Trans] post failed...")
+        return False
 
 
 
@@ -297,8 +293,8 @@ class Bot(commands.Bot):
         # use GAS ---
         else:
             try:
-                tlans_text = GAS_Trans(in_text, '', config.lang_TransToHome)
-                if tlans_text == in_text:
+                trans_text = await GAS_Trans(self._http.session, in_text, '', config.lang_TransToHome)
+                if trans_text == in_text:
                     lang_detect = config.lang_TransToHome
                 else:
                     lang_detect = 'GAS'
@@ -366,7 +362,7 @@ class Bot(commands.Bot):
             # use GAS ---
             else:
                 try:
-                    translatedText = GAS_Trans(in_text, '', lang_dest)
+                    translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
                     if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
                 except Exception as e:
                     if config.Debug: print(e)
