@@ -222,10 +222,6 @@ class Bot(commands.Bot):
             if w in message:
                 return
 
-        # 削除単語リストチェック --------------
-        for w in Delete_Words:
-            message = message.replace(w, '')
-
         # emoteの削除 --------------------------
         # エモート抜き出し
         emote_list = []
@@ -267,6 +263,10 @@ class Bot(commands.Bot):
                     message = message.replace(w, '')
 
                 if config.Debug: print(f'message without emote:{message}')
+
+        # 削除単語リストチェック --------------
+        for w in Delete_Words:
+            message = message.replace(w, '')
 
         # 複数空文字を一つにまとめる --------
         message = " ".join( message.split() )
