@@ -283,7 +283,7 @@ class Bot(commands.Bot):
         lang_detect = ''
 
         # use google_trans_new ---
-        if not config.GAS_URL:
+        if not config.GAS_URL or config.Translator == 'deepl':
             try:
                 detected = await translator.detect(in_text)
                 lang_detect = detected[0]
