@@ -41,19 +41,19 @@ jobs:
       - name: install requirements
         run: python -m pip install -r requirements.txt
 
-      - name: remove config.py
-        run: rm config.py
-
       - name: build
         run: pyinstaller ${{ matrix.opts }} --runtime-tmpdir="." --icon icon.ico --exclude-module="config" --name ${{ matrix.bin }} -F twitchTransFN.py
-
+        
+      - name: move config.py
+        run: mv config.py dist/
+      
       - name: archive with zip
         if: ${{ matrix.archive == 'zip' }}
-        run: powershell Compress-Archive -Path dist/${{ matrix.bin }} -DestinationPath ${{ matrix.env }}.zip
+        run: powershell Compress-Archive -Path dist/${{ matrix.bin }} -DestinationPath ${{twitchTransFN_}}${{ matrix.env }}.zip
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
-        run: tar -C dist -pczvf ${{ matrix.env }}.tar.gz ${{ matrix.bin }}
+        run: tar -C dist -pczvf ${{twitchTransFN_}}${{ matrix.env }}.tar.gz ${{ matrix.bin }}
 
       - name: update github release
         id: create_release
@@ -61,4 +61,4 @@ jobs:
         with:
           draft: false
           prerelease: false
-          files: ${{ matrix.env }}.${{ matrix.archive }}
+          files: ${{twitchTransFN_}}${{ matrix.env }}.${{ matrix.archive }}
