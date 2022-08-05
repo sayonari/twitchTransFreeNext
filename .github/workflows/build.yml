@@ -52,7 +52,7 @@ jobs:
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
-        run: tar -C dist acvf ${{'twitchTransFN_'}}${{ matrix.env }}.tar.gz .
+        run: mv dist ${{'twitchTransFN_'}}${{ matrix.env }} && tar acvf ${{'twitchTransFN_'}}${{ matrix.env }}.tar.gz ${{'twitchTransFN_'}}${{ matrix.env }}
 
       - name: update github release
         id: create_release
