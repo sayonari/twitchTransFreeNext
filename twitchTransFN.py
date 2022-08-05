@@ -21,10 +21,6 @@ from twitchio.ext import commands
 import sys
 import signal
 
-# import warnings
-# if not sys.warnoptions:
-#     warnings.simplefilter("ignore")
-
 version = '2.4.0'
 '''
 v2.4.0  : - yuniruyuni先生によるrequirements環境の整理
@@ -87,20 +83,6 @@ except Exception as e:
     print(e)
     print('Please make [config.py] and put it with twitchTransFN')
     input() # stop for error!!
-
-# # For [MacOS & pyinstaller] --------------------------------------------------
-# from AppKit import NSBundle
-
-# path = NSBundle.mainBundle().pathForResource_ofType_("config", "py")
-# path = path.replace('config.py','')
-# try:
-#     sys.path.append(os.path.join(path, '.'))
-#     config = importlib.import_module('config')
-# except Exception as e:
-#     print(e)
-#     print(path)
-#     print('Please make [config.py] and put it with twitchTransFN')
-#     input() # stop for error!!
 
 ###################################
 # fix some config errors ##########
