@@ -81,7 +81,7 @@ import importlib
 
 # For [directly run from Python script at Windows, MacOS] -----------------------
 try:
-    sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
+    sys.path.append(os.path.dirname(sys.argv[0]))
     config = importlib.import_module('config')
 except Exception as e:
     print(e)
