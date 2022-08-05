@@ -557,8 +557,7 @@ def main():
         # 作業用ディレクトリ削除 ＆ 作成 ----
         if config.Debug: print("making tmp dir...")
         if os.path.exists(TMP_DIR):
-            du = shutil.rmtree(TMP_DIR)
-            time.sleep(0.3)
+            shutil.rmtree(TMP_DIR)
 
         os.mkdir(TMP_DIR)
         if config.Debug: print("made tmp dir.")
@@ -578,10 +577,9 @@ def main():
         bot = Bot()
         bot.run()
 
-
     except Exception as e:
         if config.Debug: print(e)
 
-
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     main()
