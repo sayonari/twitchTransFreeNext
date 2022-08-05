@@ -23,7 +23,6 @@ jobs:
           - env: macos
             os: macos-latest
             bin: twitchTransFN.command
-            opts: --hidden-import=AppKit
             archive: tar.gz
     runs-on: ${{ matrix.os }}
     steps:
@@ -49,11 +48,11 @@ jobs:
       
       - name: archive with zip
         if: ${{ matrix.archive == 'zip' }}
-        run: powershell Compress-Archive -Path dist/${{ matrix.bin }} -DestinationPath ${{twitchTransFN_}}${{ matrix.env }}.zip
+        run: powershell Compress-Archive -Path dist/${{ matrix.bin }} -DestinationPath ${{'twitchTransFN_'}}${{ matrix.env }}.zip
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
-        run: tar -C dist -pczvf ${{twitchTransFN_}}${{ matrix.env }}.tar.gz ${{ matrix.bin }}
+        run: tar -C dist -pczvf ${{'twitchTransFN_'}}${{ matrix.env }}.tar.gz ${{ matrix.bin }}
 
       - name: update github release
         id: create_release
@@ -61,4 +60,4 @@ jobs:
         with:
           draft: false
           prerelease: false
-          files: ${{twitchTransFN_}}${{ matrix.env }}.${{ matrix.archive }}
+          files: ${{'twitchTransFN_'}}${{ matrix.env }}.${{ matrix.archive }}
