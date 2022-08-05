@@ -446,8 +446,6 @@ class Bot(commands.Bot):
         await asyncio.sleep(timer_min*60)
         await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) end! ####')
 
-bot = Bot()
-
 # CeVIOを呼び出すための関数を生成する関数
 # つまり cast 引数を与えることで、この関数から
 # 該当のCeVIOキャストにより音声再生を行える関数が帰ってきます。
@@ -541,57 +539,9 @@ def sound_play():
                 print('sound error: [!sound] command can not play sound...')
                 if config.Debug: print(e.args)
 
-#####################################
-# 最後のクリーンアップ処理 -------------
-def cleanup():
-    print("!!!Clean up!!!")
-
-    # Cleanup処理いろいろ
-
-    time.sleep(1)
-    print("!!!Clean up Done!!!")
-
-#####################################
-# sig handler  -------------
-def sig_handler(signum, frame) -> None:
-    sys.exit(1)
-
-
-#####################################
-# _MEI cleaner  -------------
-# Thanks to Sadra Heydari @ https://stackoverflow.com/questions/57261199/python-handling-the-meipass-folder-in-temporary-folder
-import glob
-import sys
-import os
-from shutil import rmtree
-
-def CLEANMEIFOLDERS():
-    try:
-        base_path = sys._MEIPASS
-
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    if config.Debug: print(f'_MEI base path: {base_path}')
-    base_path = base_path.split("\\")
-    base_path.pop(-1)
-    temp_path = ""
-    for item in base_path:
-        temp_path = temp_path + item + "\\"
-
-    mei_folders = [f for f in glob.glob(temp_path + "**/", recursive=False)]
-    for item in mei_folders:
-        if item.find('_MEI') != -1 and item != sys._MEIPASS + "\\":
-            rmtree(item)
-
 # メイン処理 ###########################
 def main():
-    signal.signal(signal.SIGTERM, sig_handler)
-
     try:
-        # 以前に生成された _MEI フォルダを削除する
-        CLEANMEIFOLDERS()
-
         # 初期表示 -----------------------
         print('twitchTransFreeNext (Version: {})'.format(version))
         print('Connect to the channel   : {}'.format(config.Twitch_Channel))
@@ -625,20 +575,13 @@ def main():
         thread_sound.start()
 
         # bot
+        bot = Bot()
         bot.run()
 
 
     except Exception as e:
         if config.Debug: print(e)
-        input() # stop for error!!
-
-    finally:
-        signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-        cleanup()
-        signal.signal(signal.SIGTERM, signal.SIG_DFL)
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
