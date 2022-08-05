@@ -48,7 +48,7 @@ jobs:
       
       - name: archive with zip
         if: ${{ matrix.archive == 'zip' }}
-        run: mv dist ${{'twitchTransFN_'}}${{ matrix.env }} && powershell Compress-Archive -Path ${{'twitchTransFN_'}}${{ matrix.env }} -DestinationPath ${{'twitchTransFN_'}}${{ matrix.env }}.zip
+        run: powershell Compress-Archive -Path  -DestinationPath ${{'twitchTransFN_'}}${{ matrix.env }}.zip
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
