@@ -326,7 +326,9 @@ class Bot(commands.Bot):
         if config.Translator == 'deepl':
             try:
                 if lang_detect in deepl_lang_dict.keys() and lang_dest in deepl_lang_dict.keys():
-                    translatedText = deepl.translate(source_language=deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text)
+                    translatedText = (
+                        await asyncio.gather(asyncio.to_thread(deepl.translate, source_language= deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text))
+                        )[0]
                     if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
                 else:
                     if not config.GAS_URL:
