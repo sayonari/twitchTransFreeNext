@@ -21,8 +21,10 @@ from twitchio.ext import commands
 import sys
 import signal
 
-version = '2.4.0'
+version = '2.5.0'
 '''
+v2.5.0  : - 実行バイナリをリポジトリに含めず，ActionsでReleaseするように変更（yuniruyuni先生，ちゃらひろ先生による）
+          - 様々なバグ修正（ちゃらひろせんせいによる）
 v2.4.0  : - yuniruyuni先生によるrequirements環境の整理
           - それに合わせたソースの改変
           - CeVIOへの対応
