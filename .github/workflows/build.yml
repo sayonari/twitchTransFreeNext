@@ -18,7 +18,6 @@ jobs:
           - env: windows
             os: windows-latest
             bin: twitchTransFN.exe
-            opts: --hidden-import=pywin32
             archive: zip
           - env: macos
             os: macos-latest
@@ -34,7 +33,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-            python-version: '3.10'
+          python-version: "3.10"
 
       - name: upgrade pip
         run: python -m pip install --upgrade pip setuptools wheel
@@ -53,7 +52,7 @@ jobs:
         run: python -m pip install -r requirements.txt
 
       - name: build
-        run: pyinstaller ${{ matrix.opts }} --runtime-tmpdir="./" --icon icon.ico --exclude-module="config" --name ${{ matrix.bin }} -F twitchTransFN.py
+        run: python build.py
 
       - name: move config.py
         run: mv config.py dist/
