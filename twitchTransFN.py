@@ -58,7 +58,7 @@ synth_queue = queue.Queue()
 sound_queue = queue.Queue()
 
 # configure for Google TTS & play
-TMP_DIR = './tmp/'
+TMP_DIR = f'{os.path.dirname(sys.argv[0])}/tmp/'
 
 # translate.googleのサフィックスリスト
 URL_SUFFIX_LIST = [re.search('translate.google.(.*)', url.strip()).group(1) for url in constant.DEFAULT_SERVICE_URLS]
