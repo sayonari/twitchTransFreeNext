@@ -1,4 +1,5 @@
 import platform
+import sys
 
 import PyInstaller.__main__
 
@@ -10,7 +11,7 @@ if OS == 'Windows':
         '--clean',
         '--onefile',
         '--hidden-import=pywin32',
-        '--runtime-tmpdir="."',
+        '--runtime-tmpdir=.',
         '--icon=icon.ico',
         '--exclude-module=config',
         '--name=twitchTransFN.exe'
@@ -20,7 +21,7 @@ elif OS == 'Darwin':
         'twitchTransFN.py',
         '--clean',
         '--onefile',
-        '--runtime-tmpdir="."',
+        '--runtime-tmpdir=.',
         '--icon=icon.ico',
         '--exclude-module=config',
         '--name=twitchTransFN.command'
@@ -30,8 +31,10 @@ elif OS == 'Linux':
         'twitchTransFN.py',
         '--clean',
         '--onefile',
-        '--runtime-tmpdir="."',
+        '--runtime-tmpdir=.',
         '--icon=icon.ico',
         '--exclude-module=config',
         '--name=twitchTransFN'
     ])
+else:
+    sys.exit(1)
