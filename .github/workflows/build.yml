@@ -18,12 +18,12 @@ jobs:
           - env: windows
             os: windows-latest
             bin: twitchTransFN.exe
-            opts: --hidden-import=pywin32
             archive: zip
           - env: macos
             os: macos-latest
             bin: twitchTransFN.command
             archive: tar.gz
+            arch: _intel
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
@@ -33,27 +33,39 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-            python-version: '3.10'
+          python-version: "3.10"
 
-      - name: install pyinstaller
-        run: python -m pip install --upgrade pip PyInstaller
+      - name: upgrade pip
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: build pyinstaller
+        continue-on-error: true
+        run: |
+          git clone https://github.com/pyinstaller/pyinstaller
+          cd ./pyinstaller/bootloader
+          python ./waf distclean all
+          cd ../
+          python setup.py install
+          cd ../
 
       - name: install requirements
         run: python -m pip install -r requirements.txt
 
       - name: build
-        run: pyinstaller ${{ matrix.opts }} --runtime-tmpdir="." --icon icon.ico --exclude-module="config" --name ${{ matrix.bin }} -F twitchTransFN.py
-        
+        run: python build.py
+
       - name: move config.py
         run: mv config.py dist/
-      
+
       - name: archive with zip
         if: ${{ matrix.archive == 'zip' }}
         run: powershell Compress-Archive -Path dist/* -DestinationPath ${{'twitchTransFN_'}}${{ matrix.env }}.zip
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
-        run: mv dist ${{'twitchTransFN_'}}${{ matrix.env }} && tar acvf ${{'twitchTransFN_'}}${{ matrix.env }}.tar.gz ${{'twitchTransFN_'}}${{ matrix.env }}
+        run: |
+          mv dist ${{'twitchTransFN_'}}${{ matrix.env }}
+          tar acvf ${{'twitchTransFN_'}}${{ matrix.env }}${{ matrix.arch }}.tar.gz ${{'twitchTransFN_'}}${{ matrix.env }}
 
       - name: update github release
         id: create_release
@@ -61,4 +73,4 @@ jobs:
         with:
           draft: false
           prerelease: false
-          files: ${{'twitchTransFN_'}}${{ matrix.env }}.${{ matrix.archive }}
+          files: ${{'twitchTransFN_'}}${{ matrix.env }}${{ matrix.arch }}.${{ matrix.archive }}
