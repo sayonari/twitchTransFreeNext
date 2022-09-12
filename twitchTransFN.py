@@ -391,6 +391,7 @@ class Bot(commands.Bot):
 
         await msg.channel.send("/me " + out_text)
 
+        # en:Save the translation to database   ja:翻訳をデータベースに保存する
         if translation_from_database is None:
             await db.save(in_text,translatedText)
 
