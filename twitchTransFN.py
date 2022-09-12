@@ -13,6 +13,8 @@ import time
 import shutil
 import re
 
+import database_controller as db # ja:既訳語データベース (en:Translation Database)
+
 import asyncio
 import deepl
 
@@ -323,52 +325,58 @@ class Bot(commands.Bot):
         if config.Debug: print(f'--- Translation ---')
         translatedText = ''
 
-        # use deepl --------------
-        # (try to use deepl, but if the language is not supported, text will be translated by google!)
-        if config.Translator == 'deepl':
-            try:
-                if lang_detect in deepl_lang_dict.keys() and lang_dest in deepl_lang_dict.keys():
-                    translatedText = (
-                        await asyncio.gather(asyncio.to_thread(deepl.translate, source_language= deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text))
-                        )[0]
-                    if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
-                else:
-                    if not config.GAS_URL:
-                        try:
-                            translatedText = await translator.translate(in_text, lang_dest)
-                            if config.Debug: print('[Google Tlanslate (google_trans_new)]')
-                        except Exception as e:
-                            if config.Debug: print(e)
+        # en:Use database to reduce deepl limit     ja:データベースの活用でDeepLの字数制限を軽減
+        translation_from_database = await db.get(in_text)
+        if translation_from_database is not None:
+            translatedText = translation_from_database[0]
+            if config.Debug: print(f'[Local Database](SQLite database file)')
+        elif translation_from_database is None:
+            # use deepl --------------
+            # (try to use deepl, but if the language is not supported, text will be translated by google!)
+            if config.Translator == 'deepl':
+                try:
+                    if lang_detect in deepl_lang_dict.keys() and lang_dest in deepl_lang_dict.keys():
+                        translatedText = (
+                            await asyncio.gather(asyncio.to_thread(deepl.translate, source_language= deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text))
+                            )[0]
+                        if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
                     else:
-                        try:
-                            translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
-                            if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
-                        except Exception as e:
-                            if config.Debug: print(e)
-            except Exception as e:
-                if config.Debug: print(e)
-
-        # NOT use deepl ----------
-        elif config.Translator == 'google':
-            # use google_trans_new ---
-            if not config.GAS_URL:
-                try:
-                    translatedText = await translator.translate(in_text, lang_dest)
-                    if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                        if not config.GAS_URL:
+                            try:
+                                translatedText = await translator.translate(in_text, lang_dest)
+                                if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                            except Exception as e:
+                                if config.Debug: print(e)
+                        else:
+                            try:
+                                translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
+                                if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+                            except Exception as e:
+                                if config.Debug: print(e)
                 except Exception as e:
                     if config.Debug: print(e)
 
-            # use GAS ---
+            # NOT use deepl ----------
+            elif config.Translator == 'google':
+                # use google_trans_new ---
+                if not config.GAS_URL:
+                    try:
+                        translatedText = await translator.translate(in_text, lang_dest)
+                        if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                    except Exception as e:
+                        if config.Debug: print(e)
+
+                # use GAS ---
+                else:
+                    try:
+                        translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
+                        if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+                    except Exception as e:
+                        if config.Debug: print(e)
+
             else:
-                try:
-                    translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
-                    if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
-                except Exception as e:
-                    if config.Debug: print(e)
-
-        else:
-            print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
-            return
+                print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
+                return
 
         # チャットへの投稿 ----------------
         # 投稿内容整形 & 投稿
@@ -383,6 +391,8 @@ class Bot(commands.Bot):
 
         await msg.channel.send("/me " + out_text)
 
+        if translation_from_database is None:
+            await db.save(in_text,translatedText)
 
         # 音声合成（出力文） --------------
         # if len(translatedText) > int(config.TooLong_Cut):
@@ -569,3 +579,4 @@ def main():
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     main()
+    db.close()
