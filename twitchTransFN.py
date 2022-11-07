@@ -1,25 +1,19 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from async_google_trans_new import AsyncTranslator, constant
-
+from http.client import HTTPSConnection as hc
 from gtts import gTTS
 from playsound import playsound
-import os
 from datetime import datetime
+from twitchio.ext import commands
+import json
+import os
 import threading
 import queue
 import time
 import shutil
 import re
-
 import database_controller as db # ja:既訳語データベース (en:Translation Database)
-
 import asyncio
 import deepl
-
-from twitchio.ext import commands
-
 import sys
 import signal
 
@@ -156,7 +150,16 @@ async def GAS_Trans(session, text, lang_source, lang_target):
             if config.Debug: print("[GAS_Trans] post failed...")
         return False
 
-
+async def non_twitch_emotes(channel:str):
+    emotes_list = [] # List of non-Twitch emotes
+    conn = hc("emotes.adamcy.pl") # non-Twitch emotes API
+    # Get non-Twitch channel emotes
+    for path in [f"/v1/channel/{channel}/emotes/bttv.7tv.ffz","/v1/global/emotes/bttv.7tv.ffz"]:
+        conn.request("GET", path) # Get non-Twitch emotes
+        resp = conn.getresponse() # Get API response
+        for i in json.loads(resp.read()):
+            emotes_list.append(i['code'])
+    return emotes_list
 
 ##########################################
 # メイン動作 ##############################
@@ -197,6 +200,7 @@ class Bot(commands.Bot):
         # 変数入れ替え ------------------------
         message = msg.content
         user    = msg.author.name.lower()
+        non_twitch_emote_list = await non_twitch_emotes(config.Twitch_Channel)
 
         # 無視ユーザリストチェック -------------
         if config.Debug: print('USER:{}'.format(user))
@@ -211,6 +215,7 @@ class Bot(commands.Bot):
         # emoteの削除 --------------------------
         # エモート抜き出し
         emote_list = []
+        # Twitch Emotes
         if msg.tags:
             if msg.tags['emotes']:
                 # エモートの種類数分 '/' で分割されて提示されてくる
@@ -224,11 +229,11 @@ class Bot(commands.Bot):
                     # （例：1110537:4-14,16-26）
                     if config.Debug: print(f'e_pos:{e_pos}')
                     if ',' in e_pos:
-                        ed_pos = e_pos.split(',')
+                        ed_pos = e_pos.split(',') # ed_pos = "emote duplicate position"?
                         for e in ed_pos:
                             if config.Debug: print(f'{e}')
                             if config.Debug: print(e.split('-'))
-                            e_s, e_e = e.split('-')
+                            e_s, e_e = e.split('-') # e_s = "emote start", e_e = "emote end"
                             if config.Debug: print(msg.content[int(e_s):int(e_e)+1])
 
                             # リストにエモートを追加
@@ -242,13 +247,20 @@ class Bot(commands.Bot):
                         # リストにエモートを追加
                         emote_list.append(msg.content[int(e_s):int(e_e)+1])
 
-                # message(msg.contextの編集用変数)から，エモート削除
-                if config.Debug: print(f'message with emote:{message}')
-                for w in sorted(emote_list, key=len, reverse=True):
-                    if config.Debug: print(w)
-                    message = message.replace(w, '')
+        # en:Remove non-Twitch emotes from message     ja:メッセージからTwitch以外のエモートを削除
+        temp_msg = message.split(' ')
+        nte = list(set(non_twitch_emote_list) & set(temp_msg)) # nte = "non-Twitch emotes"
+        for i in nte:
+            if config.Debug: print(i)
+            emote_list.append(i)
 
-                if config.Debug: print(f'message without emote:{message}')
+        # message(msg.contextの編集用変数)から，エモート削除
+        if config.Debug: print(f'message with emote:{message}')
+        for w in sorted(emote_list, key=len, reverse=True):
+            if config.Debug: print(w)
+            message = message.replace(w, '')
+
+        if config.Debug: print(f'message without emote:{message}')
 
         # 削除単語リストチェック --------------
         for w in Delete_Words:
@@ -327,6 +339,7 @@ class Bot(commands.Bot):
 
         # en:Use database to reduce deepl limit     ja:データベースの活用でDeepLの字数制限を軽減
         translation_from_database = await db.get(in_text)
+
         if translation_from_database is not None:
             translatedText = translation_from_database[0]
             if config.Debug: print(f'[Local Database](SQLite database file)')
@@ -408,16 +421,16 @@ class Bot(commands.Bot):
         await ctx.send('this is tTFN. ver: ' + version)
 
     @commands.command(name='sound')
-    async def sound(ctx):
-        sound_name = ctx.content.strip().split(" ")[1]
+    async def sound(self, ctx):
+        sound_name = ctx.message.content.strip().split(" ")[1]
         sound_queue.put(sound_name)
 
     @commands.command(name='timer')
-    async def timer(ctx):
+    async def timer(self, ctx):
         timer_min = 0
         timer_name = ''
 
-        d = ctx.content.strip().split(" ")
+        d = ctx.message.content.strip().split(" ")
         if len(d) == 2:
             try:
                 timer_min = int(d[1])
