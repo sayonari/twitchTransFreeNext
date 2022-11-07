@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from async_google_trans_new import AsyncTranslator, constant
 from http.client import HTTPSConnection as hc
 from gtts import gTTS
