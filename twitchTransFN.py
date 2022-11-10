@@ -445,6 +445,8 @@ def CeVIO(cast):
     # そこでこのCeVIO関数内にimport実行を閉じることで
     # ライブラリの不在を回避して他環境と互換させます。
     import win32com.client
+    import pythoncom
+    pythoncom.CoInitialize()
     cevio = win32com.client.Dispatch("CeVIO.Talk.RemoteService2.ServiceControl2")
     cevio.StartHost(False)
     talker = win32com.client.Dispatch("CeVIO.Talk.RemoteService2.Talker2V40")
