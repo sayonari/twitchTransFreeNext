@@ -21,8 +21,9 @@ from twitchio.ext import commands
 import sys
 import signal
 
-version = '2.5.0'
+version = '2.5.1'
 '''
+v2.5.1  : - bug fix for TTS(さとうささら) by yuniruyuni
 v2.5.0  : - 実行バイナリをリポジトリに含めず，ActionsでReleaseするように変更（yuniruyuni先生，ちゃらひろ先生による）
           - 様々なバグ修正（ちゃらひろせんせいによる）
 v2.4.0  : - yuniruyuni先生によるrequirements環境の整理
