@@ -20,8 +20,9 @@ import deepl
 import sys
 import signal
 
-version = '2.5.0'
+version = '2.5.1'
 '''
+v2.5.1  : - bug fix for TTS(さとうささら) by yuniruyuni
 v2.5.0  : - 実行バイナリをリポジトリに含めず，ActionsでReleaseするように変更（yuniruyuni先生，ちゃらひろ先生による）
           - 様々なバグ修正（ちゃらひろせんせいによる）
 v2.4.0  : - yuniruyuni先生によるrequirements環境の整理
@@ -472,6 +473,8 @@ def CeVIO(cast):
     # そこでこのCeVIO関数内にimport実行を閉じることで
     # ライブラリの不在を回避して他環境と互換させます。
     import win32com.client
+    import pythoncom
+    pythoncom.CoInitialize()
     cevio = win32com.client.Dispatch("CeVIO.Talk.RemoteService2.ServiceControl2")
     cevio.StartHost(False)
     talker = win32com.client.Dispatch("CeVIO.Talk.RemoteService2.Talker2V40")
