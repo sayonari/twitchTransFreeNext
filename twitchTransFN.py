@@ -7,6 +7,7 @@ from gtts import gTTS
 from playsound import playsound
 from datetime import datetime
 from twitchio.ext import commands
+from emoji import distinct_emoji_list
 import json
 import os
 import threading
@@ -71,7 +72,6 @@ TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg",
                 "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
 
 deepl_lang_dict = {'de':'DE', 'en':'EN', 'fr':'FR', 'es':'ES', 'pt':'PT', 'it':'IT', 'nl':'NL', 'pl':'PL', 'ru':'RU', 'ja':'JA', 'zh-CN':'ZH'}
-
 
 ##########################################
 # load config text #######################
@@ -253,8 +253,14 @@ class Bot(commands.Bot):
 
         # en:Remove non-Twitch emotes from message     ja:メッセージからTwitch以外のエモートを削除
         temp_msg = message.split(' ')
+        # en:Place non-Twitch emotes in temporary variable  ja:Twitch以外のエモートを一時的な変数に配置する。
         nte = list(set(non_twitch_emote_list) & set(temp_msg)) # nte = "non-Twitch emotes"
         for i in nte:
+            if config.Debug: print(i)
+            emote_list.append(i)
+        # en:Place unicode emoji in temporary variable  ja:ユニコード絵文字をテンポラリ変数に入れる
+        uEmoji = distinct_emoji_list(message) # uEmoji = "Unicode Emoji"
+        for i in uEmoji:
             if config.Debug: print(i)
             emote_list.append(i)
 
