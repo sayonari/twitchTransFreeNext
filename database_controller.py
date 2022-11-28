@@ -40,5 +40,10 @@ async def get(message):					# en:Get the translations	ja:翻訳を入手する
 	# en:Return translation or None if nothing found    ja:翻訳を返すか、何も見つからなければ None を返す
 	return db.execute(f'SELECT TRANSLATION FROM {table_name} WHERE MESSAGE="{message}"').fetchone()
 
+def delete(target_size:int = 52428800):
+	size = os.path.getsize(db_file)
+	if size >= target_size:
+		os.remove(db_file)
+
 def close():
 	db.close()
