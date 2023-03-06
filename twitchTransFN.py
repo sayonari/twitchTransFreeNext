@@ -348,12 +348,12 @@ class Bot(commands.Bot):
         translatedText = ''
 
         # en:Use database to reduce deepl limit     ja:データベースの活用でDeepLの字数制限を軽減
-        translation_from_database = await db.get(in_text)
+        translation_from_database = await db.get(in_text,lang_dest) if in_text is not None else None
 
         if translation_from_database is not None:
             translatedText = translation_from_database[0]
             if config.Debug: print(f'[Local Database](SQLite database file)')
-        elif translation_from_database is None:
+        elif (translation_from_database is None) and (in_text is not None):
             # use deepl --------------
             # (try to use deepl, but if the language is not supported, text will be translated by google!)
             if config.Translator == 'deepl':
@@ -401,6 +401,9 @@ class Bot(commands.Bot):
                 print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
                 return
 
+            # en:Save the translation to database   ja:翻訳をデータベースに保存する
+            await db.save(in_text,translatedText,lang_dest)
+
         # チャットへの投稿 ----------------
         # 投稿内容整形 & 投稿
         out_text = translatedText
@@ -412,11 +415,10 @@ class Bot(commands.Bot):
         # コンソールへの表示 --------------
         print(out_text)
 
-        await msg.channel.send("/me " + out_text)
-
-        # en:Save the translation to database   ja:翻訳をデータベースに保存する
-        if translation_from_database is None:
-            await db.save(in_text,translatedText)
+        # en:If message is only emoji; then do not translate, and do not send a message
+        # ja:メッセージが絵文字だけの場合は、翻訳せず、メッセージを送らないでください
+        if in_text is not None:
+            await msg.channel.send("/me " + out_text)
 
         # 音声合成（出力文） --------------
         # if len(translatedText) > int(config.TooLong_Cut):
