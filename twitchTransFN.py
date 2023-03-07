@@ -3,11 +3,7 @@
 
 from async_google_trans_new import AsyncTranslator, constant
 
-from playsound import playsound
 import os
-import threading
-import queue
-import time
 import shutil
 import re
 
@@ -20,6 +16,7 @@ import sys
 import signal
 
 import tts
+import sound
 
 version = '2.5.1'
 '''
@@ -54,8 +51,6 @@ v2.0.3  : いろいろ実装した
 
 #####################################
 # 初期設定 ###########################
-
-sound_queue = queue.Queue()
 
 # configure for Google TTS & play
 TMP_DIR = f'{os.path.dirname(sys.argv[0])}/tmp/'
@@ -125,6 +120,7 @@ else:
 
 translator = AsyncTranslator(url_suffix=url_suffix)
 tts = tts.TTS(config)
+sound = sound.Sound(config)
 
 ##########################################
 # 関連関数 ################################
@@ -400,7 +396,7 @@ class Bot(commands.Bot):
     @commands.command(name='sound')
     async def sound(ctx):
         sound_name = ctx.content.strip().split(" ")[1]
-        sound_queue.put(sound_name)
+        sound.put(sound_name)
 
     @commands.command(name='timer')
     async def timer(ctx):
@@ -433,22 +429,6 @@ class Bot(commands.Bot):
         await asyncio.sleep(timer_min*60)
         await ctx.send(f'#### timer [{timer_name}] ({timer_min} min.) end! ####')
 
-#####################################
-# !sound 音声再生スレッド -------------
-def sound_play():
-    global sound_queue
-
-    while True:
-        q = sound_queue.get()
-        if q is None:
-            time.sleep(1)
-        else:
-            try:
-                playsound('./sound/{}.mp3'.format(q), True)
-            except Exception as e:
-                print('sound error: [!sound] command can not play sound...')
-                if config.Debug: print(e.args)
-
 # メイン処理 ###########################
 def main():
     try:
@@ -476,9 +456,7 @@ def main():
         tts.run()
 
         # 音声再生スレッド起動 ################
-        if config.Debug: print("run, sound play thread...")
-        thread_sound = threading.Thread(target=sound_play)
-        thread_sound.start()
+        sound.run()
 
         # bot
         bot = Bot()
