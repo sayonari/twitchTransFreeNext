@@ -99,6 +99,9 @@ if hasattr(config, 'gTTS_Out') and not hasattr(config, 'TTS_Out'):
     print('[warn] gTTS_Out is already deprecated, please use TTS_Out instead.')
     config.TTS_Out = config.gTTS_Out
 
+# デフォルト値設定
+if hasattr(config, 'TTS_TextMaxLength'):
+    config.TTS_TextMaxLength = 0 # 0の場合はカット動作をしない。(以前と互換する動作)
 
 # 無視言語リストの準備 ################
 Ignore_Lang = [x.strip() for x in config.Ignore_Lang]
@@ -478,6 +481,17 @@ def gTTS_play(text, tl):
         print('gTTS error: TTS sound is not generated...')
         if config.Debug: print(e.args)
 
+# TTS向けのコメントをコンフィグに応じて短縮する
+# もし長過ぎる文面だった場合、省略し、末尾に省略を意味する読み上げを追加する。
+# そうでない場合は、もとのテキストのままとなる。
+def shorten_tts_comment(comment):
+    maxlen = config.TTS_TextMaxLength
+    if maxlen == 0:
+        return comment
+    if len(comment) <= maxlen:
+        return comment
+    return f"{comment[0:maxlen]} {config.TTS_MessageForOmitting}"
+
 # 音声合成(TTS)の待ち受けスレッド
 # このスレッドにより各音声合成(TTS)が起動して音声読み上げされます。
 # このスレッドに対するメッセージ入力は
@@ -498,10 +512,11 @@ def voice_synth():
             if config.Debug: print(f'config.ReadOnlyTheseLang : {config.ReadOnlyTheseLang}')
             if config.Debug: print(f'tl not in config.ReadOnlyTheseLang : {tl not in config.ReadOnlyTheseLang}')
 
-            # 「この言語だけ読み上げて」リストが空じゃなく，なおかつそのリストにに入ってなかったら無視
+            # 「この言語だけ読み上げて」リストが空じゃなく，なおかつそのリストに入ってなかったら無視
             if config.ReadOnlyTheseLang and (tl not in config.ReadOnlyTheseLang):
                 continue
 
+            text = shorten_tts_comment(text)
             tts(text, tl)
 
 # どのTextToSpeechを利用するかをconfigから選択して再生用の関数を返す

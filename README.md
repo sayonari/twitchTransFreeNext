@@ -66,8 +66,8 @@ Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 # gTTS_In:User Input Text, gTTS_Out:Bot Output Text
-gTTS_In                 = True
-gTTS_Out                = True
+TTS_In                  = True
+TTS_Out                 = True
 
 # if you make TTS for only few lang, please add langID in the list
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
@@ -96,6 +96,8 @@ Debug                   = False
 | TTS_Out | Bot output text will be read by TTS voice! |
 | gTTS_In | It's deprecated config, please use TTS_In instead. |
 | gTTS_Out | It's deprecated config, please use TTS_Out instead. |
+| TTS_TextMaxLength | You can specify TTS's read comment max length. If comment has over length from this, it will omit and added TTS_MessageForOmitting on postfix. |
+| TTS_MessageForOmitting | A message for omitting TTS's read comment. The TTS puts this message  on the omitted message. |
 | CeVIO_Cast | The cast name of CeVIO, for example "さとうささら". This option is enabled only when TTS_Kind = "CeVIO". |
 | ReadOnlyTheseLang | You can set the TTS language! |
 | Debug | You can check some error message using Debug mode (Debug = True)|
