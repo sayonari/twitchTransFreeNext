@@ -21,8 +21,9 @@ from twitchio.ext import commands
 import sys
 import signal
 
-version = '2.5.1'
+version = '2.5.2'
 '''
+v2.5.2  : - unofficial displeased_cat features added: Custom Message at end, limit to only translate one selected language (both optional)
 v2.5.1  : - bug fix for TTS(さとうささら) by yuniruyuni
 v2.5.0  : - 実行バイナリをリポジトリに含めず，ActionsでReleaseするように変更（yuniruyuni先生，ちゃらひろ先生による）
           - 様々なバグ修正（ちゃらひろせんせいによる）
@@ -99,9 +100,15 @@ if hasattr(config, 'gTTS_Out') and not hasattr(config, 'TTS_Out'):
     print('[warn] gTTS_Out is already deprecated, please use TTS_Out instead.')
     config.TTS_Out = config.gTTS_Out
 
+# Custom Message
+Custom_Message = config.Custom_Message
 
 # 無視言語リストの準備 ################
 Ignore_Lang = [x.strip() for x in config.Ignore_Lang]
+
+# Prepare read only language (chat messages)
+Is_Only_One_Lang_Active = config.Read_Only_One
+Read_Only_Lang = config.Read_Only_Lang
 
 # 無視ユーザリストの準備 ################
 Ignore_Users = [x.strip() for x in config.Ignore_Users]
@@ -292,20 +299,29 @@ class Bot(commands.Bot):
         if config.Debug: print(f'lang_detect:{lang_detect}')
 
         # 翻訳先言語の選択 ---------------
+        # Select target language
         if config.Debug: print(f'--- Select Destinate Language ---')
         lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
         if config.Debug: print(f"lang_detect:{lang_detect} lang_dest:{lang_dest}")
 
         # 翻訳先言語が文中で指定されてたら変更 -------
+        # Change if the destination language is specified in the sentence
         m = in_text.split(':')
-        if len(m) >= 2:
+        if not config.Is_Specific_Translation_disabled and len(m) >= 2:
             if m[0] in TargetLangs:
                 lang_dest = m[0]
                 in_text = ':'.join(m[1:])
         else:
             # 翻訳先が (:)で指定されてなくて、
+            # If the translation destination is not specified with (:),
             # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
-            if lang_detect in Ignore_Lang:
+            # In addition, if it is a language to be ignored, ignore all and end ↑
+            # Also end if Only one language should be translated and lang_detect is different
+            if config.Debug: print(f'--- Check if language should be ignored ---')
+            if config.Debug: print(Is_Only_One_Lang_Active)
+            if config.Debug: print(Read_Only_Lang)
+            if config.Debug: print(Read_Only_Lang != lang_detect)
+            if lang_detect in Ignore_Lang or (Is_Only_One_Lang_Active and Read_Only_Lang != lang_detect) :
                 return
 
         if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
@@ -378,7 +394,8 @@ class Bot(commands.Bot):
             out_text = '{} [by {}]'.format(out_text, user)
         if config.Show_ByLang:
             out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
-
+        if config.Is_Custom_Message_Enabled:
+            out_text = '{}, {}'.format(out_text, Custom_Message);
         # コンソールへの表示 --------------
         print(out_text)
 

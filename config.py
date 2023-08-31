@@ -10,16 +10,30 @@ Trans_OAUTH             = 'oauth_for_trans_user'
 Trans_TextColor         = 'GoldenRod'
 # Blue, Coral, DodgerBlue, SpringGreen, YellowGreen, Green, OrangeRed, Red, GoldenRod, HotPink, CadetBlue, SeaGreen, Chocolate, BlueViolet, and Firebrick
 
-lang_TransToHome        = 'ja'
-lang_HomeToOther        = 'en'
+lang_TransToHome        = 'en' #language it should translate to
+lang_HomeToOther        = 'ja' #language from which it should translate
 
 Show_ByName             = True
 Show_ByLang             = True
 
+# If you want a custom message at end of message type it here, if not set Custom_Message_Enabled to False
+Is_Custom_Message_Enabled  = True
+Custom_Message          = 'I translated it for you ~nya'
+
+# In case you want only one language translated set Read_Only_One => true and ad lang into Read_Only_Lang
+Read_Only_One           = True
+Read_Only_Lang          = "ja"
+
+# Disable specific translation via ':'
+Is_Specific_Translation_disabled = True
+
 Ignore_Lang             = ['']
-Ignore_Users            = ['Nightbot', 'BikuBikuTest']
-Ignore_Line             = ['http', 'BikuBikuTest', '888', '８８８']
-Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
+# Here you can add users that shouldnt be translated
+Ignore_Users            = ['Nightbot', 'StreamElements', 'SoundAlerts']
+# Here you can add words that shouldnt be translated (for exxample '...' gets detected as japanese)
+Ignore_Line             = ['http', '888', '８８８', '...']
+# Here you can add words that should be removed from a message
+Delete_Words            = []
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 # TTS_In:User Input Text, TTS_Out:Bot Output Text
