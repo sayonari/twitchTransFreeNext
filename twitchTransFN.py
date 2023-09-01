@@ -65,13 +65,6 @@ TMP_DIR = f'{os.path.dirname(sys.argv[0])}/tmp/'
 # translate.googleのサフィックスリスト
 URL_SUFFIX_LIST = [re.search('translate.google.(.*)', url.strip()).group(1) for url in constant.DEFAULT_SERVICE_URLS]
 
-TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
-                "hr", "cs", "da", "nl", "en", "eo", "et", "tl", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha",
-                "haw", "iw", "hi", "hmn", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky",
-                "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ps", "fa",
-                "pl", "pt", "ma", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw",
-                "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
-
 deepl_lang_dict = {'de':'DE', 'en':'EN', 'fr':'FR', 'es':'ES', 'pt':'PT', 'it':'IT', 'nl':'NL', 'pl':'PL', 'ru':'RU', 'ja':'JA', 'zh-CN':'ZH'}
 
 
@@ -100,15 +93,22 @@ if hasattr(config, 'gTTS_Out') and not hasattr(config, 'TTS_Out'):
     print('[warn] gTTS_Out is already deprecated, please use TTS_Out instead.')
     config.TTS_Out = config.gTTS_Out
 
+# Setup Target Langs
+if config.Read_Only_Specific_Lang:
+    TargetLangs = config.Read_Only_Langs    
+else:
+    TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
+                "hr", "cs", "da", "nl", "en", "eo", "et", "tl", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha",
+                "haw", "iw", "hi", "hmn", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky",
+                "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ps", "fa",
+                "pl", "pt", "ma", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw",
+                "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
+
 # Custom Message
 Custom_Message = config.Custom_Message
 
 # 無視言語リストの準備 ################
 Ignore_Lang = [x.strip() for x in config.Ignore_Lang]
-
-# Prepare read only language (chat messages)
-Is_Only_One_Lang_Active = config.Read_Only_One
-Read_Only_Lang = config.Read_Only_Lang
 
 # 無視ユーザリストの準備 ################
 Ignore_Users = [x.strip() for x in config.Ignore_Users]
@@ -306,8 +306,8 @@ class Bot(commands.Bot):
 
         # 翻訳先言語が文中で指定されてたら変更 -------
         # Change if the destination language is specified in the sentence
-        m = in_text.split(':')
-        if not config.Is_Specific_Translation_disabled and len(m) >= 2:
+        m = in_text.split(config.Specific_Trans_Command)
+        if not config.Is_Specific_Trans_Disabled and len(m) >= 2:
             if m[0] in TargetLangs:
                 lang_dest = m[0]
                 in_text = ':'.join(m[1:])
@@ -318,10 +318,7 @@ class Bot(commands.Bot):
             # In addition, if it is a language to be ignored, ignore all and end ↑
             # Also end if Only one language should be translated and lang_detect is different
             if config.Debug: print(f'--- Check if language should be ignored ---')
-            if config.Debug: print(Is_Only_One_Lang_Active)
-            if config.Debug: print(Read_Only_Lang)
-            if config.Debug: print(Read_Only_Lang != lang_detect)
-            if lang_detect in Ignore_Lang or (Is_Only_One_Lang_Active and Read_Only_Lang != lang_detect) :
+            if lang_detect in Ignore_Lang:
                 return
 
         if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")

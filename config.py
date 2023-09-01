@@ -18,21 +18,20 @@ Show_ByLang             = True
 
 # If you want a custom message at end of message type it here, if not set Custom_Message_Enabled to False
 Is_Custom_Message_Enabled  = True
-Custom_Message          = 'I translated it for you ~nya'
+Custom_Message          = 'Translation Bot by Sayonari'
 
 # In case you want only one language translated set Read_Only_One => true and ad lang into Read_Only_Lang
-Read_Only_One           = True
-Read_Only_Lang          = "ja"
+Read_Only_Specific_Lang = True
+Read_Only_Langs          = ["ja"]
 
-# Disable specific translation via ':'
-Is_Specific_Translation_disabled = True
+# Specific Translation Settings
+Specific_Trans_Command      = ':'
+Is_Specific_Trans_Disabled  = True
 
+# Ignore Settings
 Ignore_Lang             = ['']
-# Here you can add users that shouldnt be translated
 Ignore_Users            = ['Nightbot', 'StreamElements', 'SoundAlerts']
-# Here you can add words that shouldnt be translated (for exxample '...' gets detected as japanese)
 Ignore_Line             = ['http', '888', '８８８', '...']
-# Here you can add words that should be removed from a message
 Delete_Words            = []
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
