@@ -316,9 +316,9 @@ class Bot(commands.Bot):
             # If the translation destination is not specified with (:),
             # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
             # In addition, if it is a language to be ignored, ignore all and end ↑
-            # Also end if Only one language should be translated and lang_detect is different
-            if config.Debug: print(f'--- Check if language should be ignored ---')
-            if lang_detect in Ignore_Lang:
+            # Also check if Target languages are custom and enabled
+            if config.Debug: print(f'--- Check if language should be ignored newu ---')
+            if lang_detect in Ignore_Lang or (config.Read_Only_Specific_Lang and lang_detect not in TargetLangs):
                 return
 
         if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
