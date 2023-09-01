@@ -21,8 +21,9 @@ from twitchio.ext import commands
 import sys
 import signal
 
-version = '2.5.1'
+version = '2.5.2'
 '''
+v2.5.2  : - unofficial displeased_cat features added: Custom Message at end, limit to only translate one selected language (both optional)
 v2.5.1  : - bug fix for TTS(さとうささら) by yuniruyuni
 v2.5.0  : - 実行バイナリをリポジトリに含めず，ActionsでReleaseするように変更（yuniruyuni先生，ちゃらひろ先生による）
           - 様々なバグ修正（ちゃらひろせんせいによる）
@@ -64,13 +65,6 @@ TMP_DIR = f'{os.path.dirname(sys.argv[0])}/tmp/'
 # translate.googleのサフィックスリスト
 URL_SUFFIX_LIST = [re.search('translate.google.(.*)', url.strip()).group(1) for url in constant.DEFAULT_SERVICE_URLS]
 
-TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
-                "hr", "cs", "da", "nl", "en", "eo", "et", "tl", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha",
-                "haw", "iw", "hi", "hmn", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky",
-                "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ps", "fa",
-                "pl", "pt", "ma", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw",
-                "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
-
 deepl_lang_dict = {'de':'DE', 'en':'EN', 'fr':'FR', 'es':'ES', 'pt':'PT', 'it':'IT', 'nl':'NL', 'pl':'PL', 'ru':'RU', 'ja':'JA', 'zh-CN':'ZH'}
 
 
@@ -99,6 +93,19 @@ if hasattr(config, 'gTTS_Out') and not hasattr(config, 'TTS_Out'):
     print('[warn] gTTS_Out is already deprecated, please use TTS_Out instead.')
     config.TTS_Out = config.gTTS_Out
 
+# Setup Target Langs
+if config.Read_Only_Specific_Lang:
+    SpecificLangs = config.Read_Only_Langs    
+
+TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
+                "hr", "cs", "da", "nl", "en", "eo", "et", "tl", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha",
+                "haw", "iw", "hi", "hmn", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky",
+                "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ps", "fa",
+                "pl", "pt", "ma", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw",
+                "sv", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
+
+# Custom Message
+Custom_Message = config.Custom_Message
 
 # 無視言語リストの準備 ################
 Ignore_Lang = [x.strip() for x in config.Ignore_Lang]
@@ -292,20 +299,26 @@ class Bot(commands.Bot):
         if config.Debug: print(f'lang_detect:{lang_detect}')
 
         # 翻訳先言語の選択 ---------------
+        # Select target language
         if config.Debug: print(f'--- Select Destinate Language ---')
         lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
         if config.Debug: print(f"lang_detect:{lang_detect} lang_dest:{lang_dest}")
 
         # 翻訳先言語が文中で指定されてたら変更 -------
-        m = in_text.split(':')
-        if len(m) >= 2:
+        # Change if the destination language is specified in the sentence
+        m = in_text.split(config.Specific_Trans_Command)
+        if not config.Is_Specific_Trans_Disabled and len(m) >= 2:
             if m[0] in TargetLangs:
                 lang_dest = m[0]
                 in_text = ':'.join(m[1:])
         else:
             # 翻訳先が (:)で指定されてなくて、
+            # If the translation destination is not specified with (:),
             # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
-            if lang_detect in Ignore_Lang:
+            # In addition, if it is a language to be ignored, ignore all and end ↑
+            # Also check if Target languages are custom and enabled
+            if config.Debug: print(f'--- Check if language should be ignored ---')
+            if lang_detect in Ignore_Lang or (config.Read_Only_Specific_Lang and lang_detect not in SpecificLangs):
                 return
 
         if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
@@ -378,7 +391,8 @@ class Bot(commands.Bot):
             out_text = '{} [by {}]'.format(out_text, user)
         if config.Show_ByLang:
             out_text = '{} ({} > {})'.format(out_text, lang_detect, lang_dest)
-
+        if config.Is_Custom_Message_Enabled:
+            out_text = '{}, {}'.format(out_text, Custom_Message);
         # コンソールへの表示 --------------
         print(out_text)
 
