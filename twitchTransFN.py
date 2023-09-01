@@ -95,9 +95,9 @@ if hasattr(config, 'gTTS_Out') and not hasattr(config, 'TTS_Out'):
 
 # Setup Target Langs
 if config.Read_Only_Specific_Lang:
-    TargetLangs = config.Read_Only_Langs    
-else:
-    TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
+    SpecificLangs = config.Read_Only_Langs    
+
+TargetLangs = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "ny", "zh-CN", "zh-TW", "co",
                 "hr", "cs", "da", "nl", "en", "eo", "et", "tl", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha",
                 "haw", "iw", "hi", "hmn", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky",
                 "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ps", "fa",
@@ -318,7 +318,7 @@ class Bot(commands.Bot):
             # In addition, if it is a language to be ignored, ignore all and end ↑
             # Also check if Target languages are custom and enabled
             if config.Debug: print(f'--- Check if language should be ignored newu ---')
-            if lang_detect in Ignore_Lang or (config.Read_Only_Specific_Lang and lang_detect not in TargetLangs):
+            if lang_detect in Ignore_Lang or (config.Read_Only_Specific_Lang and lang_detect not in SpecificLangs):
                 return
 
         if config.Debug: print(f"lang_dest:{lang_dest} in_text:{in_text}")
