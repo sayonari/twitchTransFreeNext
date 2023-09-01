@@ -317,7 +317,7 @@ class Bot(commands.Bot):
             # なおかつ 無視対象言語だったら全部無視して終了↑ ---------
             # In addition, if it is a language to be ignored, ignore all and end ↑
             # Also check if Target languages are custom and enabled
-            if config.Debug: print(f'--- Check if language should be ignored newu ---')
+            if config.Debug: print(f'--- Check if language should be ignored ---')
             if lang_detect in Ignore_Lang or (config.Read_Only_Specific_Lang and lang_detect not in SpecificLangs):
                 return
 
