@@ -1,9 +1,9 @@
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = 'target_channel_name'
+Twitch_Channel          = 'husband_sayonari_omega'
 
-Trans_Username          = 'trans_user_name'
-Trans_OAUTH             = 'oauth_for_trans_user'
+Trans_Username          = 'saatan_trans'
+Trans_OAUTH             = '0z2hfihfz2mxjshstnrg41h36gj1rp'
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
@@ -19,6 +19,7 @@ Show_ByLang             = True
 Ignore_Lang             = ['']
 Ignore_Users            = ['Nightbot', 'BikuBikuTest']
 Ignore_Line             = ['http', 'BikuBikuTest', '888', '８８８']
+Ignore_WWW              = ['w', 'ｗ', 'W', 'Ｗ', 'ww', 'ｗｗ', 'WW', 'ＷＷ', 'www', 'ｗｗｗ', 'WWW', 'ＷＷＷ', '草']
 Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
@@ -47,4 +48,4 @@ GAS_URL                 = ''
 GoogleTranslate_suffix  = 'co.jp'
 
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
-Debug                   = False
+Debug                   = True

@@ -62,6 +62,7 @@ Show_ByLang             = True
 Ignore_Lang             = ['']
 Ignore_Users            = ['Nightbot', 'BikuBikuTest']
 Ignore_Line             = ['http', 'BikuBikuTest', '888', '８８８']
+Ignore_WWW              = ['w', 'ｗ', 'W', 'Ｗ', 'ww', 'ｗｗ', 'WW', 'ＷＷ', 'www', 'ｗｗｗ', 'WWW', 'ＷＷＷ', '草']
 Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
@@ -70,13 +71,15 @@ TTS_In                  = True
 TTS_Out                 = True
 TTS_Kind                = "gTTS" # You can choice "CeVIO" if you want to use CeVIO as TTS.
 # CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
+TTS_TextMaxLength       = 30
+TTS_MessageForOmitting  = "以下略"
 
 # if you make TTS for only few lang, please add langID in the list
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
 ReadOnlyTheseLang       = []
 
 # Select the translate engine ('deepl' or 'google')
-Translator              = 'google'
+Translator              = 'deepl'
 
 # Use Google Apps Script for tlanslating
 # e.g.) GAS_URL         = 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec'
@@ -89,6 +92,7 @@ GoogleTranslate_suffix  = 'co.jp'
 
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
 Debug                   = False
+
 ```
 
 | Option| Description |
@@ -104,6 +108,7 @@ Debug                   = False
 | Ignore_Lang | You can set some languages : [ja,en, ...] |
 | Ignore_Users | You can set some users : [Nightbot, BikuBikuTest, someotheruser, ...] |
 | Ignore_Line | If the words are in message, the message will be ignored.|
+| Ignore_WWW | Ignore Tanshiba(単芝:just only 'w'）line. |
 | Delete_Words | The words will be removed from message. |
 | TTS_Kind | The kind of TTS, "gTTS"(default) or "CeVIO". If you want to use CeVIO, you need to install CeVIO AI in your local computer. |
 | TTS_In | Input text will be read by TTS voice! |

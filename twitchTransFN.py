@@ -8,8 +8,10 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.0'
+version = '2.7.1'
 '''
+v2.7.1  : - bug fix
+          - non_twitch_emotes()をコメントアウト（うまく動かなかったので）
 v2.7.0  : - 単芝チェック追加（wのみの発言を無視）
           - 長過ぎるコメント文をTTS読み上げに対して省略する機能（@yuniruyuni）
           - tts.py, sound.py を作成し，それぞれの機能を分離
@@ -47,7 +49,7 @@ v2.0.3  : いろいろ実装した
 # 初期設定 ###########################
 
 # configure for Google TTS & play
-TMP_DIR = f'{os.path.dirname(sys.argv[0])}/tmp/'
+TMP_DIR = os.path.join(os.getcwd(), 'tmp')
 
 # translate.googleのサフィックスリスト
 URL_SUFFIX_LIST = [re.search('translate.google.(.*)', url.strip()).group(1) for url in constant.DEFAULT_SERVICE_URLS]
@@ -87,7 +89,7 @@ if hasattr(config, 'gTTS_Out') and not hasattr(config, 'TTS_Out'):
     config.TTS_Out = config.gTTS_Out
 
 
-# 無視言語リストの準備 ################
+# 無視言語リストの準備 ##################
 Ignore_Lang = [x.strip() for x in config.Ignore_Lang]
 
 # 無視ユーザリストの準備 ################
@@ -96,10 +98,13 @@ Ignore_Users = [x.strip() for x in config.Ignore_Users]
 # 無視ユーザリストのユーザ名を全部小文字にする
 Ignore_Users = [str.lower() for str in Ignore_Users]
 
-# 無視テキストリストの準備 ################
+# 無視テキストリストの準備 ##############
 Ignore_Line = [x.strip() for x in config.Ignore_Line]
 
-# 無視単語リストの準備 ################
+# 無視単芝リストの準備 #################
+Ignore_WWW = [x.strip() for x in config.Ignore_WWW]
+
+# 無視単語リストの準備 #################
 Delete_Words = [x.strip() for x in config.Delete_Words]
 
 # suffixのチェック、google_trans_newインスタンス生成
@@ -144,16 +149,17 @@ async def GAS_Trans(session, text, lang_source, lang_target):
             if config.Debug: print("[GAS_Trans] post failed...")
         return False
 
-async def non_twitch_emotes(channel:str):
-    emotes_list = [] # List of non-Twitch emotes
-    conn = hc("emotes.adamcy.pl") # non-Twitch emotes API
-    # Get non-Twitch channel emotes
-    for path in [f"/v1/channel/{channel}/emotes/bttv.7tv.ffz","/v1/global/emotes/bttv.7tv.ffz"]:
-        conn.request("GET", path) # Get non-Twitch emotes
-        resp = conn.getresponse() # Get API response
-        for i in json.loads(resp.read()):
-            emotes_list.append(i['code'])
-    return emotes_list
+# async def non_twitch_emotes(channel:str):
+#     emotes_list = [] # List of non-Twitch emotes
+#     conn = hc("emotes.adamcy.pl") # non-Twitch emotes API
+    
+#     # Get non-Twitch channel emotes
+#     for path in [f"/v1/channel/{channel}/emotes/bttv.7tv.ffz","/v1/global/emotes/bttv.7tv.ffz"]:
+#         conn.request("GET", path) # Get non-Twitch emotes
+#         resp = conn.getresponse() # Get API response
+#         for i in json.loads(resp.read()):
+#             emotes_list.append(i['code'])
+#     return emotes_list
 
 ##########################################
 # メイン動作 ##############################
@@ -194,7 +200,7 @@ class Bot(commands.Bot):
         # 変数入れ替え ------------------------
         message = msg.content
         user    = msg.author.name.lower()
-        non_twitch_emote_list = await non_twitch_emotes(config.Twitch_Channel)
+        # non_twitch_emote_list = await non_twitch_emotes(config.Twitch_Channel)
 
         # 無視ユーザリストチェック -------------
         if config.Debug: print('USER:{}'.format(user))
@@ -205,6 +211,11 @@ class Bot(commands.Bot):
         for w in Ignore_Line:
             if w in message:
                 return
+            
+        # 単芝チェック ------------------------
+        # １行が単芝だけだったら無視
+        if message in Ignore_WWW:
+            return
 
         # emoteの削除 --------------------------
         # エモート抜き出し
@@ -241,13 +252,14 @@ class Bot(commands.Bot):
                         # リストにエモートを追加
                         emote_list.append(msg.content[int(e_s):int(e_e)+1])
 
-        # en:Remove non-Twitch emotes from message     ja:メッセージからTwitch以外のエモートを削除
-        temp_msg = message.split(' ')
-        # en:Place non-Twitch emotes in temporary variable  ja:Twitch以外のエモートを一時的な変数に配置する。
-        nte = list(set(non_twitch_emote_list) & set(temp_msg)) # nte = "non-Twitch emotes"
-        for i in nte:
-            if config.Debug: print(i)
-            emote_list.append(i)
+        # # en:Remove non-Twitch emotes from message     ja:メッセージからTwitch以外のエモートを削除
+        # temp_msg = message.split(' ')
+        # # en:Place non-Twitch emotes in temporary variable  ja:Twitch以外のエモートを一時的な変数に配置する。
+        # nte = list(set(non_twitch_emote_list) & set(temp_msg)) # nte = "non-Twitch emotes"
+        # for i in nte:
+        #     if config.Debug: print(i)
+        #     emote_list.append(i)
+
         # en:Place unicode emoji in temporary variable  ja:ユニコード絵文字をテンポラリ変数に入れる
         uEmoji = distinct_emoji_list(message) # uEmoji = "Unicode Emoji"
         for i in uEmoji:
@@ -474,7 +486,7 @@ def main():
             if config.Debug: print(f'GAS URL: {config.GAS_URL}')
 
         # 作業用ディレクトリ削除 ＆ 作成 ----
-        if config.Debug: print("making tmp dir...")
+        if config.Debug: print(f"making tmp dir...: {TMP_DIR}")
         if os.path.exists(TMP_DIR):
             shutil.rmtree(TMP_DIR)
 
