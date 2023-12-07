@@ -1,11 +1,9 @@
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = 'DdotB'
+Twitch_Channel          = 'target_channel_name'
 
-Trans_Username          = 'DeeBeeTTV'
-#Trans_Username          = 'ddotb'
-Trans_OAUTH             = 'oauth:mqnrbkcxpowouryog1gts78m9q15mj'
-#Trans_OAUTH             = 'oauth:asrboztzet3ybctrrun47rnlfhhbs5'
+Trans_Username          = 'trans_user_name'
+Trans_OAUTH             = 'oauth_for_trans_user'
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
@@ -15,17 +13,17 @@ Trans_TextColor         = 'CadetBlue'
 lang_TransToHome        = 'ja'
 lang_HomeToOther        = 'en'
 
-Show_ByName             = False
+Show_ByName             = True
 Show_ByLang             = True
 
 Ignore_Lang             = ['']
-Ignore_Users            = ['Nightbot', 'BikuBikuTest', 'halo_trans', 'streamelements', 'streamlabs', 'sery_bot', 'beaneyboobutler', 'ministerofforeignaffairs', 'PokemonCommunityGame']
+Ignore_Users            = ['Nightbot', 'BikuBikuTest']
 Ignore_Line             = ['http', 'BikuBikuTest', '888', '８８８']
 Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 
 # Any emvironment, set it to `True`, then text will be read by TTS voice!
 # TTS_In:User Input Text, TTS_Out:Bot Output Text
-TTS_In                  = False
+TTS_In                  = True
 TTS_Out                 = True
 TTS_Kind                = "gTTS" # You can choice "CeVIO" if you want to use CeVIO as TTS.
 # CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
