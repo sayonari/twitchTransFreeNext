@@ -8,8 +8,12 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.5.1'
+version = '2.7.0'
 '''
+v2.7.0  : - 単芝チェック追加（wのみの発言を無視）
+          - 長過ぎるコメント文をTTS読み上げに対して省略する機能（@yuniruyuni）
+          - tts.py, sound.py を作成し，それぞれの機能を分離
+          - DeepLが無料翻訳の単語制限に達しないようにするためのアップデートです。（@didotb）
 v2.5.1  : - bug fix for TTS(さとうささら) by yuniruyuni
 v2.5.0  : - 実行バイナリをリポジトリに含めず，ActionsでReleaseするように変更（yuniruyuni先生，ちゃらひろ先生による）
           - 様々なバグ修正（ちゃらひろせんせいによる）
