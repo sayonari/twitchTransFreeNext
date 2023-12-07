@@ -7,7 +7,7 @@ Trans_OAUTH             = 'oauth_for_trans_user'
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
-Trans_TextColor         = 'CadetBlue'
+Trans_TextColor         = 'GoldenRod'
 # Blue, Coral, DodgerBlue, SpringGreen, YellowGreen, Green, OrangeRed, Red, GoldenRod, HotPink, CadetBlue, SeaGreen, Chocolate, BlueViolet, and Firebrick
 
 lang_TransToHome        = 'ja'
