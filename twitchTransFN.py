@@ -8,8 +8,9 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.1'
+version = '2.7.2'
 '''
+v2.7.2  : - 開発者（さぁたん，さよなりω）のアカウント名が起動時に表示されるようになった
 v2.7.1  : - bug fix
           - non_twitch_emotes()をコメントアウト（うまく動かなかったので）
 v2.7.0  : - 単芝チェック追加（wのみの発言を無視）
@@ -44,6 +45,8 @@ v2.0.5  : 裏技「翻訳先言語選択機能」実装
 v2.0.4  : 
 v2.0.3  : いろいろ実装した
 '''
+
+wakeup_message = f'TwitchTransFreeNext v.{version}, by さぁたん @saatan_pion and さよなりω @husband_sayonari_omega'
 
 #####################################
 # 初期設定 ###########################
@@ -179,7 +182,7 @@ class Bot(commands.Bot):
         'Called once when the bot goes online.'
         print(f"{self.nick} is online!")
         await channel.send(f"/color {config.Trans_TextColor}")
-        await channel.send(f"/me has landed!")
+        await channel.send(f"/me {wakeup_message}")
 
     # メッセージを受信したら ####################
     async def event_message(self, msg):
