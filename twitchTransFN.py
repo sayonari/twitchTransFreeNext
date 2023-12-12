@@ -8,8 +8,9 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.2'
+version = '2.7.3'
 '''
+v2.7.2  : - Windows版 .exe をPyInstallerでビルドするときに，trojanが検出される問題を修正（build.ymlの修正）
 v2.7.2  : - 開発者（さぁたん，さよなりω）のアカウント名が起動時に表示されるようになった
 v2.7.1  : - bug fix
           - non_twitch_emotes()をコメントアウト（うまく動かなかったので）
