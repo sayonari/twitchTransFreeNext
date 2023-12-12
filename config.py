@@ -1,9 +1,9 @@
 ######################################################
 # PLEASE CHANGE FOLLOWING CONFIGS ####################
-Twitch_Channel          = 'husband_sayonari_omega'
+Twitch_Channel          = 'target_channel_name'
 
-Trans_Username          = 'saatan_trans'
-Trans_OAUTH             = '0z2hfihfz2mxjshstnrg41h36gj1rp'
+Trans_Username          = 'trans_user_name'
+Trans_OAUTH             = 'oauth_for_trans_user'
 
 #######################################################
 # OPTIONAL CONFIGS ####################################
@@ -48,4 +48,4 @@ GAS_URL                 = ''
 GoogleTranslate_suffix  = 'co.jp'
 
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
-Debug                   = True
+Debug                   = False
