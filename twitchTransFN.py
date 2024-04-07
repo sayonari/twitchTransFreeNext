@@ -8,9 +8,11 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.3'
+version = '2.7.4'
 '''
-v2.7.2  : - Windows版 .exe をPyInstallerでビルドするときに，trojanが検出される問題を修正（build.ymlの修正）
+v2.7.4  : - _MEI削除部分がコントリビュータによって削除されていたので，再度追加（@sayonari)
+          - zh-TWの翻訳先言語をzh-twに変更
+v2.7.3  : - Windows版 .exe をPyInstallerでビルドするときに，trojanが検出される問題を修正（build.ymlの修正）
 v2.7.2  : - 開発者（さぁたん，さよなりω）のアカウント名が起動時に表示されるようになった
 v2.7.1  : - bug fix
           - non_twitch_emotes()をコメントアウト（うまく動かなかったので）
@@ -164,6 +166,49 @@ async def GAS_Trans(session, text, lang_source, lang_target):
 #         for i in json.loads(resp.read()):
 #             emotes_list.append(i['code'])
 #     return emotes_list
+
+#####################################
+# _MEI cleaner  -------------
+# Thanks to Sadra Heydari @ https://stackoverflow.com/questions/57261199/python-handling-the-meipass-folder-in-temporary-folder
+import glob
+import sys
+import os
+from shutil import rmtree
+
+def CLEANMEIFOLDERS():
+    try:
+        base_path = sys._MEIPASS
+
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    if config.Debug: print(f'_MEI base path: {base_path}')
+    base_path = base_path.split("\\") 
+    base_path.pop(-1)                
+    temp_path = ""                    
+    for item in base_path:
+        temp_path = temp_path + item + "\\"
+
+    mei_folders = [f for f in glob.glob(temp_path + "**/", recursive=False)]
+
+    # パスに＿MEIが含まれているものだけをリストに残す
+    mei_folders = [f for f in mei_folders if '_MEI' in f]
+
+    # リスト中のフォルダを作成時間順に並べて上書き
+    mei_folders = sorted(mei_folders, key=os.path.getctime)
+
+    # 一番新しいフォルダ以外を削除
+    if len(mei_folders) > 1:
+        for item in mei_folders[:-1]:
+            rmtree(item)
+    
+    # if len(mei_folders) > 1:
+    #     for item in mei_folders:
+    #         if item.find('_MEI') != -1 and item != sys._MEIPASS + "\\":
+    #             rmtree(item)
+
+
+
 
 ##########################################
 # メイン動作 ##############################
@@ -323,6 +368,11 @@ class Bot(commands.Bot):
         # 翻訳先言語の選択 ---------------
         if config.Debug: print(f'--- Select Destinate Language ---')
         lang_dest = config.lang_TransToHome if lang_detect != config.lang_TransToHome else config.lang_HomeToOther
+
+        # zh-TW バグ対応（言語検出系はzh-TWだが，翻訳系はzh-twにしないといけない）
+        if lang_dest == 'zh-TW':
+            lang_dest = 'zh-tw'
+
         if config.Debug: print(f"lang_detect:{lang_detect} lang_dest:{lang_dest}")
 
         # 翻訳先言語が文中で指定されてたら変更 -------
@@ -477,6 +527,9 @@ class Bot(commands.Bot):
 # メイン処理 ###########################
 def main():
     try:
+        # 以前に生成された _MEI フォルダを削除する
+        CLEANMEIFOLDERS()
+
         # 初期表示 -----------------------
         print('twitchTransFreeNext (Version: {})'.format(version))
         print('Connect to the channel   : {}'.format(config.Twitch_Channel))

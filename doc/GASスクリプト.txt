@@ -1,5 +1,0 @@
-function doPost(e) {
-  var p = JSON.parse(e.postData.getDataAsString());
-  var translatedText = LanguageApp.translate(p.text, p.source, p.target);
-  return ContentService.createTextOutput(translatedText)
-}
