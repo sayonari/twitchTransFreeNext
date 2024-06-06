@@ -5,3 +5,4 @@ deepl-translate==1.2.0
 twitchio==2.3.0
 pywin32;platform_system == 'Windows'
 emoji==2.2.0
+httpx==0.27.0
