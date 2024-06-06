@@ -5,7 +5,7 @@ from async_google_trans_new import AsyncTranslator, constant
 from http.client import HTTPSConnection as hc
 from twitchio.ext import commands
 from emoji import distinct_emoji_list
-import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
+import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound, httpx
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
 version = '2.7.4'
@@ -137,23 +137,36 @@ async def GAS_Trans(session, text, lang_source, lang_target):
         config.Debug: print("[GAS_Trans] text is empty")
         return False
 
-    url = config.GAS_URL
-    payload = {
-        "text"  : text,
+    base_url = config.GAS_URL
+    # パラメータとしてテキストとターゲット言語を設定
+    params = {
+        "text": text,
         "source": lang_source,
-        "target": lang_target
-    }
-    headers = {
-        'Content-Type': 'application/json',
+        "target": lang_target,
     }
 
-    async with session.post(url, json=payload, headers=headers) as res:
-        if res.status == 200:
-            if config.Debug: print("[GAS_Trans] post success!")
-            return await res.text()
+    # 非同期のHTTP GET リクエストを送信
+    async with httpx.AsyncClient() as client:
+        response = await client.get(base_url, params=params)
+
+        # レスポンスのステータスコードが302である場合、リダイレクト先のURLを取得
+        if response.status_code == 302:
+            redirect_url = response.headers['Location']
+            # 新たにリダイレクト先のURLにリクエストを送信
+            response = await client.get(redirect_url)
+
+        # レスポンスのステータスコードが200であることを確認
+        if response.status_code == 200:
+            # JSON形式でレスポンスを解析
+            result = response.json()
+
+            # 翻訳されたテキストを取得
+            translated_text = result["text"]
+
+            return translated_text
         else:
-            if config.Debug: print("[GAS_Trans] post failed...")
-        return False
+            print("Error:", response.status_code)
+            return None
 
 # async def non_twitch_emotes(channel:str):
 #     emotes_list = [] # List of non-Twitch emotes
