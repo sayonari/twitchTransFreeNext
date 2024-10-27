@@ -35,8 +35,8 @@ TTS_MessageForOmitting  = "以下略"
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
 ReadOnlyTheseLang       = []
 
-# Select the translate engine ('deepl' or 'google')
-Translator              = 'deepl'
+# Select the translate engine ('deepl' or 'google' or 'openai')
+Translator              = 'openai'
 
 # Use Google Apps Script for tlanslating
 # e.g.) GAS_URL         = 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec'
@@ -49,3 +49,13 @@ GoogleTranslate_suffix  = 'co.jp'
 
 # If you meet any bugs, You can check some error message using Debug mode (Debug = True)
 Debug                   = False
+
+#OpenAI translate, and support custom url
+OpenAI_URL = 'https://api.openai.com/v1/'
+OpenAI_API_KEY = 'xx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+System_Prompt = 'You are a professional, authentic machine translation engine.'
+Model = 'gpt-4o-mini'
+
+# proxy
+# Proxy_URL = 'http://127.0.0.1:7897'
+Proxy_URL = ''
