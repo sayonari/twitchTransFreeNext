@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import openai
 from async_google_trans_new import AsyncTranslator, constant
 from http.client import HTTPSConnection as hc
 from twitchio.ext import commands
@@ -166,6 +166,40 @@ async def GAS_Trans(session, text, lang_source, lang_target):
 #         for i in json.loads(resp.read()):
 #             emotes_list.append(i['code'])
 #     return emotes_list
+
+
+#####################################
+# OpenAI translation
+
+openai.api_key = config.OpenAI_API_KEY
+if config.OpenAI_URL:
+    openai.base_url = config.OpenAI_URL
+
+if config.Model:
+    model_name = config.Model
+else:
+    model_name = "gpt-4o-mini"
+
+
+async def OpenAI_Trans(session, text, lang_source, lang_target):
+    user_prompt = f'Translate the following source text from {lang_source} to {lang_target}, Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:'
+    if config.Debug: print(user_prompt)
+    response = openai.chat.completions.create(
+        model=model_name,
+        messages=[
+            {
+                "role": "system",
+                "content": config.System_Prompt,
+            },
+            {
+                "role": "user",
+                "content": user_prompt,
+            }
+        ],
+        temperature=0.7,
+    )
+    return response.choices[0].message.content
+
 
 #####################################
 # _MEI cleaner  -------------
@@ -373,6 +407,9 @@ class Bot(commands.Bot):
         if lang_dest == 'zh-TW':
             lang_dest = 'zh-tw'
 
+        if lang_dest == 'zh-CN':
+            lang_dest = 'zh-cn'
+
         if config.Debug: print(f"lang_detect:{lang_detect} lang_dest:{lang_dest}")
 
         # 翻訳先言語が文中で指定されてたら変更 -------
@@ -452,7 +489,13 @@ class Bot(commands.Bot):
                         if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
                     except Exception as e:
                         if config.Debug: print(e)
-
+            # OpenAI translation
+            elif config.Translator == 'openai':
+                try:
+                    translatedText = await OpenAI_Trans(self._http.session, in_text, lang_detect, lang_dest)
+                    if config.Debug: print('[OpenAI Tlanslate]')
+                except Exception as e:
+                    if config.Debug: print(e)
             else:
                 print(f'ERROR: config TRANSLATOR is set the wrong value with [{config.Translator}]')
                 return
