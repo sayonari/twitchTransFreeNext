@@ -83,6 +83,13 @@ except Exception as e:
     input() # stop for error!!
 
 ###################################
+# proxy setting ###################
+if config.Proxy_URL:
+    os.environ["http_proxy"] = config.Proxy_URL
+    os.environ["https_proxy"] = config.Proxy_URL
+
+
+###################################
 # fix some config errors ##########
 
 # convert depreated gTTS_In, gTTS_Out => TTS_in, TTS_Out ------

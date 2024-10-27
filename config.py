@@ -55,3 +55,7 @@ OpenAI_URL = 'https://api.openai.com/v1/'
 OpenAI_API_KEY = 'xx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 System_Prompt = 'You are a professional, authentic machine translation engine.'
 Model = 'gpt-4o-mini'
+
+# proxy
+# Proxy_URL = 'http://127.0.0.1:7897'
+Proxy_URL = ''
