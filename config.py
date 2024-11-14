@@ -29,14 +29,14 @@ TTS_Out                 = True
 TTS_Kind                = "gTTS" # You can choice "CeVIO" if you want to use CeVIO as TTS.
 # CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
 TTS_TextMaxLength       = 30
-TTS_MessageForOmitting  = "以下略"
+TTS_MessageForOmitting  = ""
 
 # if you make TTS for only few lang, please add langID in the list
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!
 ReadOnlyTheseLang       = []
 
 # Select the translate engine ('deepl' or 'google')
-Translator              = 'deepl'
+Translator              = 'google'
 
 # Use Google Apps Script for tlanslating
 # e.g.) GAS_URL         = 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec'

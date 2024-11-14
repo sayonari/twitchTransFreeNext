@@ -8,8 +8,12 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.4'
+version = '2.7.5'
 '''
+v2.7.5  : - deepl翻訳が429(要求過多)エラーなので，標準翻訳設定をgoogleにした（とりあえず）（@sayonari）
+          - 翻訳結果がない時投稿しないように変更（@sayonari）
+          - 翻訳後のテキストからも，Delete_Wordsを削除するように変更（@sayonari）
+          - 読み上げ時の末尾の追加語（以下略）を config.py から削除（@sayonari）
 v2.7.4  : - _MEI削除部分がコントリビュータによって削除されていたので，再度追加（@sayonari)
           - zh-TWの翻訳先言語をzh-twに変更
 v2.7.3  : - Windows版 .exe をPyInstallerでビルドするときに，trojanが検出される問題を修正（build.ymlの修正）
@@ -461,7 +465,12 @@ class Bot(commands.Bot):
             await db.save(in_text,translatedText,lang_dest)
 
         # チャットへの投稿 ----------------
-        # 投稿内容整形 & 投稿
+
+        # 翻訳後のメッセージでも，削除単語リストチェック＆削除 --------------
+        for w in Delete_Words:
+            translatedText = translatedText.replace(w, '')
+
+        # 投稿内容整形(名前，言語表示)-------------
         out_text = translatedText
         if config.Show_ByName:
             out_text = '{} [by {}]'.format(out_text, user)
@@ -471,9 +480,9 @@ class Bot(commands.Bot):
         # コンソールへの表示 --------------
         print(out_text)
 
-        # en:If message is only emoji; then do not translate, and do not send a message
-        # ja:メッセージが絵文字だけの場合は、翻訳せず、メッセージを送らないでください
-        if in_text is not None:
+        # チャットへの投稿 --------------
+        # 翻訳結果がない時は投稿しない　(つまり：translatedTextが空でない時は投稿する！)
+        if translatedText and (in_text is not None):
             await msg.channel.send("/me " + out_text)
 
         # 音声合成（出力文） --------------
