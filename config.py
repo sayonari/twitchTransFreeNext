@@ -26,12 +26,26 @@ Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 # TTS_In:User Input Text, TTS_Out:Bot Output Text
 TTS_In                  = True
 TTS_Out                 = True
-# You can choice "CeVIO" if you want to use CeVIO as TTS.
-# You can choice "openai" if you want to use openai as TTS. If you choice openai, you must set openai api key.
-TTS_Kind                = "openai" 
-CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
+# TTS_Kind options: "gTTS" (Google TTS), "CeVIO" (CeVIO TTS), "EDGE" (Microsoft Edge TTS), "openai" (OpenAI TTS)
+TTS_Kind                = "EDGE"
+# CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
 TTS_TextMaxLength       = 120
 TTS_MessageForOmitting  = "以下略"
+
+# TTS Username Settings
+TTS_ReadUsername        = True                 # Whether to read username
+TTS_SayWord             = " 说"                  # Connecting word between username and content, e.g.: "username says content"
+TTS_SayWord_EN          = " says"               # Connecting word in English environment
+TTS_SayWord_JA          = " さん、"              # Connecting word in Japanese environment
+TTS_UsernameMaxLength   = 20                   # Maximum username length, truncated if exceeded
+
+# Edge TTS Configuration
+# You can modify the default voices for each language here, for example:
+# EdgeTTS_Voice_ZhCN     = "zh-CN-YunxiNeural" # Chinese male voice
+# EdgeTTS_Voice_En       = "en-US-GuyNeural"   # English male voice
+
+# Set to True to display all available Edge TTS voices at startup
+Debug_EdgeTTS_Voices    = False
 
 # if you make TTS for only few lang, please add langID in the list
 # for example, ['ja'] means Japanese only, ['ko','en'] means Korean and English are TTS!

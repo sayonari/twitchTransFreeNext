@@ -187,6 +187,10 @@ if config.Model:
 else:
     model_name = "gpt-4o-mini"
 
+# proxy
+if config.Proxy_URL:
+    os.environ["http_proxy"] = config.Proxy_URL
+    os.environ["https_proxy"] = config.Proxy_URL
 
 async def OpenAI_Trans(session, text, lang_source, lang_target):
     user_prompt = f'Translate the following source text from {lang_source} to {lang_target}, Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:'
@@ -436,7 +440,7 @@ class Bot(commands.Bot):
         # 音声合成（入力文） --------------
         # if len(in_text) > int(config.TooLong_Cut):
         #     in_text = in_text[0:int(config.TooLong_Cut)]
-        if config.TTS_In: tts.put(in_text, lang_detect)
+        if config.TTS_In: tts.put(in_text, lang_detect, user)
 
         # 検出言語と翻訳先言語が同じだったら無視！
         if lang_detect == lang_dest:
@@ -529,7 +533,7 @@ class Bot(commands.Bot):
         # 音声合成（出力文） --------------
         # if len(translatedText) > int(config.TooLong_Cut):
         #     translatedText = translatedText[0:int(config.TooLong_Cut)]
-        if config.TTS_Out: tts.put(translatedText, lang_dest)
+        if config.TTS_Out: tts.put(translatedText, lang_dest, user)
 
 
     ##############################

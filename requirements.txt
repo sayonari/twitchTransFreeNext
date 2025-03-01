@@ -1,8 +1,10 @@
-async_google_trans_new==1.4.5
+async_google_trans_new
 gTTS==2.2.4
 playsound==1.2.2
 deepl-translate==1.2.0
 twitchio==2.3.0
 pywin32;platform_system == 'Windows'
 emoji==2.2.0
-openai==1.52.2
+openai
+edge-tts
+pyinstaller~=6.11.0
