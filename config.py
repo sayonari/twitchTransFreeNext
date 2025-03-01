@@ -26,9 +26,11 @@ Delete_Words            = ['saatanNooBow', 'BikuBikuTest']
 # TTS_In:User Input Text, TTS_Out:Bot Output Text
 TTS_In                  = True
 TTS_Out                 = True
-TTS_Kind                = "gTTS" # You can choice "CeVIO" if you want to use CeVIO as TTS.
-# CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
-TTS_TextMaxLength       = 30
+# You can choice "CeVIO" if you want to use CeVIO as TTS.
+# You can choice "openai" if you want to use openai as TTS. If you choice openai, you must set openai api key.
+TTS_Kind                = "openai" 
+CeVIO_Cast            = "さとうささら" # When you are using CeVIO, you must set voice cast name.
+TTS_TextMaxLength       = 120
 TTS_MessageForOmitting  = "以下略"
 
 # if you make TTS for only few lang, please add langID in the list
@@ -55,6 +57,10 @@ OpenAI_URL = 'https://api.openai.com/v1/'
 OpenAI_API_KEY = 'xx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 System_Prompt = 'You are a professional, authentic machine translation engine.'
 Model = 'gpt-4o-mini'
+# tts-1-hd, tts-1
+TTS_Model = 'tts-1'
+# alloy, echo, fable, onyx, nova, shimmer
+TTS_Voice = 'alloy'
 
 # proxy
 # Proxy_URL = 'http://127.0.0.1:7897'

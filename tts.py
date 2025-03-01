@@ -8,6 +8,7 @@ import time
 import os
 import queue
 import threading
+import openai
 
 class TTS:
     """
@@ -70,6 +71,21 @@ class TTS:
                 print('CeVIO error: TTS sound is not generated...')
                 if self.config.Debug: print(e.args)
         return play
+    
+    def openai_tts(self, text, tl): 
+        try:
+            tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
+            response = openai.audio.speech.create(
+                model=self.config.TTS_Model,
+                voice=self.config.TTS_Voice,
+                input=text
+            )
+            response.stream_to_file(tts_file)
+            playsound(tts_file, True)
+            os.remove(tts_file)
+        except Exception as e:
+            print('openai error: TTS sound is not generated...')
+            if self.config.Debug: print(e.args)
 
 
     # gTTSを利用して
@@ -93,6 +109,8 @@ class TTS:
         kind = self.config.TTS_Kind.strip().upper()
         if kind == "CeVIO".upper():
             return self.CeVIO(self.config.CeVIO_Cast)
+        elif kind == "OPENAI".upper():
+            return self.openai_tts
         else:
             return self.gTTS_play
 
