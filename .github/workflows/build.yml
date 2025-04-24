@@ -122,7 +122,8 @@ jobs:
           echo "Created archive: ${ARCHIVE_NAME}.tar.gz"
           ls -la
 
-      - name: Debug Archive Info
+      - name: Debug Archive Info (Unix)
+        if: runner.os != 'Windows'
         run: |
           echo "Matrix env: ${{ matrix.env }}"
           echo "Matrix arch: ${{ matrix.arch }}"
@@ -130,7 +131,18 @@ jobs:
           echo "Archive type: ${{ matrix.archive }}"
           ls -la
 
-      - name: List Files Before Release
+      - name: Debug Archive Info (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          echo "Matrix env: ${{ matrix.env }}"
+          echo "Matrix arch: ${{ matrix.arch }}"
+          echo "Version: ${{ steps.get_version.outputs.version }}"
+          echo "Archive type: ${{ matrix.archive }}"
+          Get-ChildItem -Force
+
+      - name: List Files Before Release (Unix)
+        if: runner.os != 'Windows'
         run: |
           echo "Current directory contents:"
           ls -la
@@ -140,6 +152,19 @@ jobs:
           else
             echo "twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.tar.gz"
           fi
+
+      - name: List Files Before Release (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          echo "Current directory contents:"
+          Get-ChildItem -Force
+          echo "Files that should be uploaded:"
+          if ("${{ matrix.archive }}" -eq "zip") {
+            echo "twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.zip"
+          } else {
+            echo "twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.tar.gz"
+          }
 
       - name: update github release
         id: create_release
