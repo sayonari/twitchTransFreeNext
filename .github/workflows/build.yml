@@ -116,15 +116,19 @@ jobs:
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
         run: |
-          if [[ "${{ matrix.env }}" == "macos_M1" || "${{ matrix.env }}" == "macos_Intel" ]]; then
-            ARCHIVE_NAME="twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
-            mv dist "$ARCHIVE_NAME"
-            tar -czvf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
-          else
-            ARCHIVE_NAME="twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
-            mv dist "$ARCHIVE_NAME"
-            tar -czvf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
-          fi
+          ARCHIVE_NAME="twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
+          mv dist "$ARCHIVE_NAME"
+          tar -czvf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
+          echo "Created archive: ${ARCHIVE_NAME}.tar.gz"
+          ls -la
+
+      - name: Debug Archive Info
+        run: |
+          echo "Matrix env: ${{ matrix.env }}"
+          echo "Matrix arch: ${{ matrix.arch }}"
+          echo "Version: ${{ steps.get_version.outputs.version }}"
+          echo "Archive type: ${{ matrix.archive }}"
+          ls -la
 
       - name: update github release
         id: create_release
@@ -132,7 +136,9 @@ jobs:
         with:
           draft: false
           prerelease: false
-          files: twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}.${{ matrix.archive }}
+          files: |
+            twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.${{ matrix.archive }}
+            twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}.${{ matrix.archive }}
 
       - name: Remove dist directory (Unix)
         if: runner.os != 'Windows'
