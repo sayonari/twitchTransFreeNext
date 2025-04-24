@@ -8,8 +8,9 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.5'
+version = '2.7.6'
 '''
+v2.7.6  : - SSLエラーにならないように，cacert.pemを同梱（@sayonari）
 v2.7.5  : - deepl翻訳が429(要求過多)エラーなので，標準翻訳設定をgoogleにした（とりあえず）（@sayonari）
           - 翻訳結果がない時投稿しないように変更（@sayonari）
           - 翻訳後のテキストからも，Delete_Wordsを削除するように変更（@sayonari）
@@ -131,6 +132,26 @@ tts = tts.TTS(config)
 sound = sound.Sound(config)
 
 ##########################################
+# cacert.pem の場所を特定
+if getattr(sys, 'frozen', False):
+    # PyInstaller でビルドされた場合
+    bundle_dir = sys._MEIPASS
+else:
+    # 通常の Python スクリプトとして実行された場合
+    bundle_dir = os.path.dirname(os.path.abspath(__file__))
+
+cacert_path = os.path.join(bundle_dir, 'cacert.pem')
+# cacert_path = os.path.join(bundle_dir, 'data', 'cacert.pem') # dataフォルダに配置した場合
+
+# 環境変数 SSL_CERT_FILE を設定
+os.environ['SSL_CERT_FILE'] = cacert_path
+
+# cacert.pem が存在するか確認
+if not os.path.exists(cacert_path):
+    print(f"Error: cacert.pem not found at {cacert_path}")
+    sys.exit(1)
+
+##########################################
 # 関連関数 ################################
 ##########################################
 
@@ -138,7 +159,7 @@ sound = sound.Sound(config)
 # Google Apps Script 翻訳
 async def GAS_Trans(session, text, lang_source, lang_target):
     if text is None:
-        config.Debug: print("[GAS_Trans] text is empty")
+        if config.Debug: print("[GAS_Trans] text is empty")
         return False
 
     url = config.GAS_URL
@@ -182,29 +203,32 @@ from shutil import rmtree
 def CLEANMEIFOLDERS():
     try:
         base_path = sys._MEIPASS
-
     except Exception:
         base_path = os.path.abspath(".")
 
     if config.Debug: print(f'_MEI base path: {base_path}')
-    base_path = base_path.split("\\") 
-    base_path.pop(-1)                
-    temp_path = ""                    
-    for item in base_path:
-        temp_path = temp_path + item + "\\"
-
-    mei_folders = [f for f in glob.glob(temp_path + "**/", recursive=False)]
-
-    # パスに＿MEIが含まれているものだけをリストに残す
-    mei_folders = [f for f in mei_folders if '_MEI' in f]
-
-    # リスト中のフォルダを作成時間順に並べて上書き
-    mei_folders = sorted(mei_folders, key=os.path.getctime)
-
-    # 一番新しいフォルダ以外を削除
-    if len(mei_folders) > 1:
-        for item in mei_folders[:-1]:
-            rmtree(item)
+    
+    # Get the parent directory in a cross-platform way
+    parent_dir = os.path.dirname(base_path)
+    
+    # Get all directories in the parent directory
+    try:
+        all_dirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir) 
+                   if os.path.isdir(os.path.join(parent_dir, d))]
+        
+        # Filter for _MEI directories
+        mei_folders = [d for d in all_dirs if '_MEI' in d]
+        
+        # Sort by creation time
+        mei_folders = sorted(mei_folders, key=os.path.getctime)
+        
+        # Remove all but the newest folder
+        if len(mei_folders) > 1:
+            for item in mei_folders[:-1]:
+                if config.Debug: print(f'Removing old _MEI folder: {item}')
+                rmtree(item)
+    except Exception as e:
+        if config.Debug: print(f'Error cleaning _MEI folders: {e}')
     
     # if len(mei_folders) > 1:
     #     for item in mei_folders:
