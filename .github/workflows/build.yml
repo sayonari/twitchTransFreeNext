@@ -77,12 +77,34 @@ jobs:
       - name: Create dist directory
         run: mkdir -p dist
 
-      - name: Get Version
-        id: get_version
+      - name: Get Version (Unix)
+        id: get_version_unix
+        if: runner.os != 'Windows'
         run: |
           VERSION=$(grep "version =" twitchTransFN.py | awk -F "'" '{print $2}')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version detected: $VERSION"
+
+      - name: Get Version (Windows)
+        id: get_version_windows
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $content = Get-Content -Path twitchTransFN.py
+          $versionLine = $content | Where-Object { $_ -match "version = '(.+)'" }
+          $version = $matches[1]
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "Version detected: $version"
+
+      - name: Set Version Variable
+        id: get_version
+        run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            echo "version=${{ steps.get_version_windows.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ steps.get_version_unix.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
 
       - name: build
         run: python build.py ${{ matrix.env }}
