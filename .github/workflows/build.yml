@@ -77,18 +77,32 @@ jobs:
       - name: Create dist directory
         run: mkdir -p dist
 
+      - name: Get Version
+        id: get_version
+        run: |
+          VERSION=$(grep "version =" twitchTransFN.py | awk -F "'" '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version detected: $VERSION"
+
       - name: build
         run: python build.py ${{ matrix.env }}
 
       - name: archive with zip
         if: ${{ matrix.archive == 'zip' }}
-        run: powershell Compress-Archive -Path dist/* -DestinationPath ${{'twitchTransFN_'}}${{ steps.get_version.outputs.version }}_${{ matrix.env }}.zip
+        run: powershell Compress-Archive -Path dist/* -DestinationPath twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.zip
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
         run: |
-          mv dist ${{'twitchTransFN_'}}${{ steps.get_version.outputs.version }}_${{ matrix.env }}
-          tar acvf ${{'twitchTransFN_'}}${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}.tar.gz ${{'twitchTransFN_'}}${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}
+          if [[ "${{ matrix.env }}" == "macos_M1" || "${{ matrix.env }}" == "macos_Intel" ]]; then
+            ARCHIVE_NAME="twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
+            mv dist "$ARCHIVE_NAME"
+            tar -czvf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
+          else
+            ARCHIVE_NAME="twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
+            mv dist "$ARCHIVE_NAME"
+            tar -czvf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
+          fi
 
       - name: update github release
         id: create_release
@@ -96,13 +110,7 @@ jobs:
         with:
           draft: false
           prerelease: false
-          files: ${{'twitchTransFN_'}}${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}.${{ matrix.archive }}
-
-      - name: Get Version
-        id: get_version
-        run: |
-          VERSION=$(grep "version =" twitchTransFN.py | awk -F "'" '{print $2}')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          files: twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}.${{ matrix.archive }}
 
       - name: Remove dist directory
         run: rm -rf dist
