@@ -130,15 +130,25 @@ jobs:
           echo "Archive type: ${{ matrix.archive }}"
           ls -la
 
+      - name: List Files Before Release
+        run: |
+          echo "Current directory contents:"
+          ls -la
+          echo "Files that should be uploaded:"
+          if [[ "${{ matrix.archive }}" == "zip" ]]; then
+            echo "twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.zip"
+          else
+            echo "twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.tar.gz"
+          fi
+
       - name: update github release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
           draft: false
           prerelease: false
-          files: |
-            twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.${{ matrix.archive }}
-            twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}.${{ matrix.archive }}
+          files: "*.${{ matrix.archive }}"
+          fail_on_unmatched_files: false
 
       - name: Remove dist directory (Unix)
         if: runner.os != 'Windows'
