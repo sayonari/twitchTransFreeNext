@@ -2,12 +2,45 @@
 # -*- coding: utf-8 -*-
 
 from gtts import gTTS
-from playsound import playsound
 from datetime import datetime
 import time
 import os
 import queue
 import threading
+import platform
+import sys
+
+# Check if we're on macOS
+is_macos = platform.system() == 'Darwin'
+
+# Import playsound with appropriate handling for macOS
+try:
+    from playsound import playsound
+    playsound_available = True
+except ImportError as e:
+    playsound_available = False
+    import_error = e
+
+# For macOS, try to import AppKit if needed
+if is_macos:
+    try:
+        import AppKit
+    except ImportError:
+        # If we're in a PyInstaller bundle on macOS
+        if getattr(sys, 'frozen', False):
+            # Try to use afplay command line tool instead
+            def playsound(sound_file, block=True):
+                if not os.path.exists(sound_file):
+                    print(f"Sound file not found: {sound_file}")
+                    return
+                
+                cmd = f"afplay {sound_file}"
+                if block:
+                    os.system(cmd)
+                else:
+                    threading.Thread(target=os.system, args=(cmd,)).start()
+            
+            playsound_available = True
 
 class TTS:
     """
@@ -81,7 +114,19 @@ class TTS:
             tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
             if self.config.Debug: print('gTTS file: {}'.format(tts_file))
             tts.save(tts_file)
-            playsound(tts_file, True)
+            
+            # Check if playsound is available
+            if playsound_available:
+                playsound(tts_file, True)
+            else:
+                # If we're on macOS, try to use afplay as a fallback
+                if is_macos:
+                    os.system(f"afplay {tts_file}")
+                else:
+                    print('gTTS error: No sound playback method available')
+                    if 'import_error' in globals():
+                        print(import_error)
+            
             os.remove(tts_file)
         except Exception as e:
             print('gTTS error: TTS sound is not generated...')

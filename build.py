@@ -55,9 +55,9 @@ def build_for_os(os_name, arch, add_data_option):
         os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_linux")
     elif os_name == "macos":
         if arch == "arm64":
-            os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_macos_M1")
+            os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_macos_M1.command")
         elif arch == "x86_64":
-            os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_macos_Intel")
+            os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_macos_Intel.command")
 
     print(f"Build for {os_name} ({arch}) completed.")
 
