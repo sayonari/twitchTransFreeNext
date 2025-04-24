@@ -134,5 +134,14 @@ jobs:
           prerelease: false
           files: twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}${{ matrix.arch }}.${{ matrix.archive }}
 
-      - name: Remove dist directory
+      - name: Remove dist directory (Unix)
+        if: runner.os != 'Windows'
         run: rm -rf dist
+
+      - name: Remove dist directory (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          if (Test-Path dist) {
+            Remove-Item -Recurse -Force dist
+          }
