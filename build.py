@@ -4,10 +4,29 @@ import subprocess
 import shutil
 
 def get_version():
-    with open("twitchTransFN.py", "r") as f:
-        for line in f:
-            if line.startswith("version ="):
-                return line.split("'")[1]
+    try:
+        # UTF-8エンコーディングでファイルを読み込む
+        with open("twitchTransFN.py", "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("version ="):
+                    return line.split("'")[1]
+    except UnicodeDecodeError:
+        # UTF-8で読み込めない場合は、他のエンコーディングを試す
+        try:
+            with open("twitchTransFN.py", "r", encoding="shift-jis") as f:
+                for line in f:
+                    if line.startswith("version ="):
+                        return line.split("'")[1]
+        except Exception as e:
+            print(f"Error reading file with shift-jis encoding: {e}")
+    except Exception as e:
+        print(f"Error reading file: {e}")
+    
+    # バージョン情報が取得できない場合は、環境変数から取得を試みる
+    import os
+    if "VERSION" in os.environ:
+        return os.environ["VERSION"]
+    
     return "unknown"
 
 def build_for_os(os_name, arch, add_data_option):
