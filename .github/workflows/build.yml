@@ -111,13 +111,16 @@ jobs:
 
       - name: archive with zip
         if: ${{ matrix.archive == 'zip' }}
-        run: powershell Compress-Archive -Path dist/* -DestinationPath twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.zip
+        run: |
+          Copy-Item -Path config.py -Destination dist/
+          powershell Compress-Archive -Path dist/* -DestinationPath twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.zip
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
         run: |
           ARCHIVE_NAME="twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
           mv dist "$ARCHIVE_NAME"
+          cp config.py "$ARCHIVE_NAME/"
           tar -czvf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
           echo "Created archive: ${ARCHIVE_NAME}.tar.gz"
           ls -la
