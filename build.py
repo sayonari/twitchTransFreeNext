@@ -37,6 +37,9 @@ def build_for_os(os_name, arch, add_data_option):
     if os.path.exists("dist"):
         shutil.rmtree("dist")
     
+    # OSに応じたパス区切り文字を設定
+    path_sep = ";" if os_name == "windows" else ":"
+    
     # build
     command = [
         "pyinstaller",
@@ -44,6 +47,7 @@ def build_for_os(os_name, arch, add_data_option):
         "--icon=icon.ico",  # アイコン設定を追加
         "--runtime-tmpdir=.", # runtime-tmpdirを追加
         add_data_option,
+        f"--add-data=config.py{path_sep}.",  # config.pyを追加（OSに応じたパス区切り文字を使用）
         "twitchTransFN.py"
     ]
     subprocess.run(command, check=True)
