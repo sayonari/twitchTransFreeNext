@@ -29,16 +29,18 @@ try:									# en:Create translation table	ja:翻訳テーブルの作成
 		TRANSLATION TEXT);''')
 	print("Table created.")
 except sqlite3.OperationalError as e:  # en:Continue if table exists   ja:テーブルが存在する場合、続行する
-	print(e)
+	print(f'sqlite3.OperationalError {e}')
 	pass
 
 async def save(message,translation,dlang):	# en:Save the translations   ja:翻訳を保存する
-	db.execute(f'INSERT INTO {table_name} (MESSAGE,DLANG,TRANSLATION) VALUES (\"{message}\", \"{dlang}\", \"{translation}\");')
+	params = (message, dlang, translation)
+	db.execute(f'INSERT INTO {table_name} (MESSAGE,DLANG,TRANSLATION) VALUES (?,?,?);',params)
 	db.commit()
 
 async def get(message,dlang):  # en:Get the translations    ja:翻訳を入手する
 	# en:Return translation or None if nothing found   ja:翻訳を返すか、何も見つからなければ None を返す
-	return db.execute(f'SELECT TRANSLATION FROM {table_name} WHERE MESSAGE="{message}" AND DLANG="{dlang}"').fetchone()
+	params = (message,dlang)
+	return db.execute(f'SELECT TRANSLATION FROM {table_name} WHERE MESSAGE=? AND DLANG=?',params).fetchone()
 
 def delete(target_size:int = 52428800):
 	size = os.path.getsize(db_file)
