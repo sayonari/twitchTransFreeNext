@@ -10,13 +10,17 @@ db_name = 'database.db'					# en:Filename of database		ja:データベースの�
 table_name = 'translations'
 
 # 実行ファイルのディレクトリを取得（Nuitka/PyInstaller対応）
-# Nuitkaは'__compiled__'モジュールを持つ
-is_frozen = getattr(sys, 'frozen', False) or '__compiled__' in sys.modules
+exe_path = sys.executable
+is_frozen = (
+    getattr(sys, 'frozen', False) or
+    '__compiled__' in sys.modules or
+    '/tmp/' in exe_path or '/var/folders/' in exe_path
+)
 
 if is_frozen:
     # Nuitkaまたはその他のバイナリ実行時
-    # sys.executableを使用して実際の実行ファイルのパスを取得
-    exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+    # sys.argv[0]を使用（onefileモードではこちらが正しいパス）
+    exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 else:
     # 通常のPythonスクリプト実行時
     exe_dir = os.path.dirname(os.path.abspath(__file__))

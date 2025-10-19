@@ -73,6 +73,8 @@ def build_for_os(os_name, arch):
         "--include-data-file=cacert.pem=cacert.pem",
         f"--output-dir=dist",
         f"--output-filename={output_file}",
+        "--jobs=1",  # リンカークラッシュ回避のため並列ジョブを制限
+        "--lto=no",  # LTOを無効化してメモリ使用量を抑える
     ]
     base_command.extend(nuitka_options)
     base_command.append("twitchTransFN.py")

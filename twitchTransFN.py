@@ -8,8 +8,10 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.12'
+version = '2.7.13'
 '''
+v2.7.13 : - is_frozen判定を一時ディレクトリチェックに変更（Nuitka onefile完全対応）（@sayonari）
+          - EXE_DIRをsys.argv[0]ベースに変更（正しいパスを取得）（@sayonari）
 v2.7.12 : - is_frozen判定を'__compiled__' in sys.modulesに修正（Nuitka検出修正）（@sayonari）
           - sys.argv[0]とsys.executableのデバッグ出力を追加（@sayonari）
 v2.7.11 : - EXE_DIR取得をsys.executableに変更（Nuitka onefileモード対応）（@sayonari）
@@ -70,24 +72,29 @@ wakeup_message = f'TwitchTransFreeNext v.{version}, by さぁたん @saatan_pion
 # 初期設定 ###########################
 
 # 実行ファイルのディレクトリを取得（Nuitka/PyInstaller対応）
-# Nuitkaは'__compiled__'モジュールを持つ
-is_frozen = getattr(sys, 'frozen', False) or '__compiled__' in sys.modules
+# Nuitkaの--onefileモードではsys.executableが一時ディレクトリを指す
+# その場合はsys.argv[0]を使用する
+exe_path = sys.executable
+is_frozen = (
+    getattr(sys, 'frozen', False) or
+    '__compiled__' in sys.modules or
+    '/tmp/' in exe_path or '/var/folders/' in exe_path  # 一時ディレクトリチェック
+)
 
 # デバッグ出力
 print(f"[Main DEBUG] is_frozen: {is_frozen}")
-print(f"[Main DEBUG] '__compiled__' in sys.modules: {'__compiled__' in sys.modules}")
 print(f"[Main DEBUG] sys.argv[0]: {sys.argv[0]}")
 print(f"[Main DEBUG] sys.executable: {sys.executable}")
 
 if is_frozen:
     # Nuitkaまたはその他のバイナリ実行時
-    # sys.executableを使用して実際の実行ファイルのパスを取得
-    EXE_DIR = os.path.dirname(os.path.abspath(sys.executable))
-    print(f"[Main DEBUG] Using sys.executable for EXE_DIR: {EXE_DIR}")
+    # sys.argv[0]を使用（onefileモードではこちらが正しいパス）
+    EXE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+    print(f"[Main DEBUG] Binary mode: Using sys.argv[0] for EXE_DIR: {EXE_DIR}")
 else:
     # 通常のPythonスクリプト実行時
     EXE_DIR = os.path.dirname(os.path.abspath(__file__))
-    print(f"[Main DEBUG] Using __file__ for EXE_DIR: {EXE_DIR}")
+    print(f"[Main DEBUG] Script mode: Using __file__ for EXE_DIR: {EXE_DIR}")
 
 # configure for Google TTS & play
 TMP_DIR = os.path.join(EXE_DIR, 'tmp')

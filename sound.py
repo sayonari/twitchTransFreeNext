@@ -12,16 +12,18 @@ import platform
 is_macos = platform.system() == 'Darwin'
 
 # Nuitka/PyInstallerバイナリ実行時の検出
-# Nuitkaは'__compiled__'モジュールを持つ
-is_frozen = getattr(sys, 'frozen', False) or '__compiled__' in sys.modules
+exe_path = sys.executable
+is_frozen = (
+    getattr(sys, 'frozen', False) or
+    '__compiled__' in sys.modules or
+    '/tmp/' in exe_path or '/var/folders/' in exe_path
+)
 
 # デバッグ出力
 print(f"[Sound DEBUG] is_macos: {is_macos}")
 print(f"[Sound DEBUG] is_frozen: {is_frozen}")
-print(f"[Sound DEBUG] sys.frozen: {getattr(sys, 'frozen', 'not set')}")
-print(f"[Sound DEBUG] '__compiled__' in sys.modules: {'__compiled__' in sys.modules}")
-print(f"[Sound DEBUG] sys.argv[0]: {sys.argv[0]}")
 print(f"[Sound DEBUG] sys.executable: {sys.executable}")
+print(f"[Sound DEBUG] Temp dir check: {'/tmp/' in exe_path or '/var/folders/' in exe_path}")
 
 # macOS かつ バイナリ実行時は、playsoundを使わずafplayを直接使用
 if is_macos and is_frozen:
