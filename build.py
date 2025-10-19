@@ -37,53 +37,63 @@ def build_for_os(os_name, arch):
     if os.path.exists("dist"):
         shutil.rmtree("dist")
 
-    # 共通のNuitkaオプション
-    base_command = [
-        "python", "-m", "nuitka",
-        "--standalone",
-        "--onefile",
-        "--assume-yes-for-downloads",
-        "--include-data-file=cacert.pem=cacert.pem",
-    ]
+    # distフォルダを作成
+    if not os.path.exists("dist"):
+        os.makedirs("dist")
 
     # OS別の設定
     if os_name == "windows":
-        base_command.extend([
-            "--windows-console-mode=force",
-            "--windows-icon-from-ico=icon.ico",
-            "--output-filename=twitchTransFN.exe",
-        ])
         output_file = "twitchTransFN.exe"
         final_name = f"twitchTransFN_{version}_win.exe"
+        nuitka_options = [
+            "--windows-console-mode=force",
+        ]
+        # icon.icoが存在する場合のみアイコンを設定
+        if os.path.exists("icon.ico"):
+            nuitka_options.append("--windows-icon-from-ico=icon.ico")
     elif os_name == "linux":
-        base_command.extend([
-            "--output-filename=twitchTransFN",
-        ])
         output_file = "twitchTransFN"
         final_name = f"twitchTransFN_{version}_linux"
+        nuitka_options = []
     elif os_name == "macos":
-        base_command.extend([
-            "--output-filename=twitchTransFN.command",
-        ])
         output_file = "twitchTransFN.command"
+        nuitka_options = []
         if arch == "arm64":
             final_name = f"twitchTransFN_{version}_macos_M1.command"
         elif arch == "x86_64":
             final_name = f"twitchTransFN_{version}_macos_Intel.command"
 
-    # メインスクリプトを追加
+    # Nuitkaコマンドの構築（uv経由で実行）
+    base_command = [
+        "uv", "run", "python", "-m", "nuitka",
+        "--standalone",
+        "--onefile",
+        "--assume-yes-for-downloads",
+        "--include-data-file=cacert.pem=cacert.pem",
+        f"--output-dir=dist",
+        f"--output-filename={output_file}",
+    ]
+    base_command.extend(nuitka_options)
     base_command.append("twitchTransFN.py")
 
     # ビルド実行
+    print(f"Running: {' '.join(base_command)}")
     subprocess.run(base_command, check=True)
 
-    # distフォルダを作成
-    if not os.path.exists("dist"):
-        os.makedirs("dist")
+    # ファイル名の変更
+    built_file = os.path.join("dist", output_file)
+    final_file = os.path.join("dist", final_name)
 
-    # ファイル名の変更と移動
-    if os.path.exists(output_file):
-        shutil.move(output_file, f"dist/{final_name}")
+    if os.path.exists(built_file):
+        if built_file != final_file:
+            shutil.move(built_file, final_file)
+        print(f"Successfully created: {final_file}")
+    else:
+        print(f"Warning: Expected output file not found: {built_file}")
+        print("Looking for build outputs...")
+        for root, dirs, files in os.walk("dist"):
+            for file in files:
+                print(f"  Found: {os.path.join(root, file)}")
 
     print(f"Build for {os_name} ({arch}) completed.")
 

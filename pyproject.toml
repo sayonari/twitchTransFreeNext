@@ -26,8 +26,8 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 py-modules = ["twitchTransFN", "config", "database_controller", "tts", "sound", "build"]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "nuitka>=2.0.0",
     "ordered-set>=4.1.0",
 ]

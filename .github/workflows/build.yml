@@ -47,6 +47,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      - name: Setup MSVC (Windows only)
+        if: matrix.env == 'windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Download cacert.pem
         run: |
           curl -o cacert.pem https://curl.se/ca/cacert.pem
