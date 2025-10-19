@@ -12,7 +12,8 @@ table_name = 'translations'
 # 実行ファイルのディレクトリを取得（Nuitka/PyInstaller対応）
 if getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__'):
     # Nuitkaまたはその他のバイナリ実行時
-    exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    # sys.executableを使用して実際の実行ファイルのパスを取得
+    exe_dir = os.path.dirname(os.path.abspath(sys.executable))
 else:
     # 通常のPythonスクリプト実行時
     exe_dir = os.path.dirname(os.path.abspath(__file__))

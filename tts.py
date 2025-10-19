@@ -16,6 +16,12 @@ is_macos = platform.system() == 'Darwin'
 # Nuitka/PyInstallerバイナリ実行時の検出
 is_frozen = getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__')
 
+# デバッグ出力
+print(f"[TTS DEBUG] is_macos: {is_macos}")
+print(f"[TTS DEBUG] is_frozen: {is_frozen}")
+print(f"[TTS DEBUG] sys.frozen: {getattr(sys, 'frozen', 'not set')}")
+print(f"[TTS DEBUG] hasattr(sys, '__compiled__'): {hasattr(sys, '__compiled__')}")
+
 # macOS かつ バイナリ実行時は、playsoundを使わずafplayを直接使用
 if is_macos and is_frozen:
     # afplayを使用するカスタム実装

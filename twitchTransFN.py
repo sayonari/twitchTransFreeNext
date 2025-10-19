@@ -8,8 +8,10 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.10'
+version = '2.7.11'
 '''
+v2.7.11 : - EXE_DIR取得をsys.executableに変更（Nuitka onefileモード対応）（@sayonari）
+          - is_frozen判定のデバッグ出力を追加（問題診断用）（@sayonari）
 v2.7.10 : - tmpディレクトリの相対パス問題を完全に修正（@sayonari）
           - TMP_DIRとSOUND_DIRを明示的にTTS/Soundクラスに渡すように変更（@sayonari）
 v2.7.9  : - tmpディレクトリとデータベースを実行ファイルのディレクトリに生成するように修正（@sayonari）
@@ -68,7 +70,8 @@ wakeup_message = f'TwitchTransFreeNext v.{version}, by さぁたん @saatan_pion
 # 実行ファイルのディレクトリを取得（Nuitka/PyInstaller対応）
 if getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__'):
     # Nuitkaまたはその他のバイナリ実行時
-    EXE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+    # sys.executableを使用して実際の実行ファイルのパスを取得
+    EXE_DIR = os.path.dirname(os.path.abspath(sys.executable))
 else:
     # 通常のPythonスクリプト実行時
     EXE_DIR = os.path.dirname(os.path.abspath(__file__))
