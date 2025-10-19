@@ -8,8 +8,9 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.15'
+version = '2.7.16'
 '''
+v2.7.16 : - DEBUG表示を削除（モジュールインポート順序の問題を解決）（@sayonari）
 v2.7.15 : - DEBUG表示をconfig.Debugでガード（全モジュール：tts, sound, database_controller, main）（@sayonari）
 v2.7.14 : - Nuitkaビルドオプション最適化：--jobs=1, --lto=noをmacOS専用に（Windows/Linuxのビルド時間改善）（@sayonari）
 v2.7.13 : - is_frozen判定を一時ディレクトリチェックに変更（Nuitka onefile完全対応）（@sayonari）
@@ -83,21 +84,13 @@ is_frozen = (
     '/tmp/' in exe_path or '/var/folders/' in exe_path  # 一時ディレクトリチェック
 )
 
-# デバッグ出力
-if config.Debug:
-    print(f"[Main DEBUG] is_frozen: {is_frozen}")
-    print(f"[Main DEBUG] sys.argv[0]: {sys.argv[0]}")
-    print(f"[Main DEBUG] sys.executable: {sys.executable}")
-
 if is_frozen:
     # Nuitkaまたはその他のバイナリ実行時
     # sys.argv[0]を使用（onefileモードではこちらが正しいパス）
     EXE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
-    if config.Debug: print(f"[Main DEBUG] Binary mode: Using sys.argv[0] for EXE_DIR: {EXE_DIR}")
 else:
     # 通常のPythonスクリプト実行時
     EXE_DIR = os.path.dirname(os.path.abspath(__file__))
-    if config.Debug: print(f"[Main DEBUG] Script mode: Using __file__ for EXE_DIR: {EXE_DIR}")
 
 # configure for Google TTS & play
 TMP_DIR = os.path.join(EXE_DIR, 'tmp')

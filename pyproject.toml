@@ -1,6 +1,6 @@
 [project]
 name = "twitchTransFreeNext"
-version = "2.7.15"
+version = "2.7.16"
 description = "Twitch Chat Translator (CUI)"
 readme = "README.md"
 requires-python = ">=3.10"

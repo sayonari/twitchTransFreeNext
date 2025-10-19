@@ -7,7 +7,6 @@ import queue
 import os
 import sys
 import platform
-import config
 
 # Check if we're on macOS
 is_macos = platform.system() == 'Darwin'
@@ -19,13 +18,6 @@ is_frozen = (
     '__compiled__' in sys.modules or
     '/tmp/' in exe_path or '/var/folders/' in exe_path
 )
-
-# デバッグ出力
-if config.Debug:
-    print(f"[Sound DEBUG] is_macos: {is_macos}")
-    print(f"[Sound DEBUG] is_frozen: {is_frozen}")
-    print(f"[Sound DEBUG] sys.executable: {sys.executable}")
-    print(f"[Sound DEBUG] Temp dir check: {'/tmp/' in exe_path or '/var/folders/' in exe_path}")
 
 # macOS かつ バイナリ実行時は、playsoundを使わずafplayを直接使用
 if is_macos and is_frozen:
