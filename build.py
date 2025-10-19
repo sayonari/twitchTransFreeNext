@@ -95,7 +95,27 @@ def build_for_os(os_name, arch):
             for file in files:
                 print(f"  Found: {os.path.join(root, file)}")
 
-    print(f"Build for {os_name} ({arch}) completed.")
+    # Nuitkaが生成した不要なディレクトリを削除
+    nuitka_temp_dirs = [
+        os.path.join("dist", "twitchTransFN.dist"),
+        os.path.join("dist", "twitchTransFN.onefile-build"),
+        os.path.join("dist", "twitchTransFN.build"),
+    ]
+    for temp_dir in nuitka_temp_dirs:
+        if os.path.exists(temp_dir):
+            print(f"Removing Nuitka temp directory: {temp_dir}")
+            shutil.rmtree(temp_dir)
+
+    # distディレクトリ内の最終的なファイルリストを表示
+    print("\nFinal dist contents:")
+    for item in os.listdir("dist"):
+        item_path = os.path.join("dist", item)
+        if os.path.isfile(item_path):
+            print(f"  File: {item}")
+        else:
+            print(f"  Dir: {item}/")
+
+    print(f"\nBuild for {os_name} ({arch}) completed.")
 
 def main(target_os):
     # cacert.pemが存在することを確認

@@ -89,19 +89,29 @@ jobs:
 
       - name: archive with zip
         if: ${{ matrix.archive == 'zip' }}
+        shell: powershell
         run: |
-          Copy-Item -Path config.py -Destination dist/
-          powershell Compress-Archive -Path dist/* -DestinationPath twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}.zip
+          $ARCHIVE_NAME = "twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
+          New-Item -ItemType Directory -Path $ARCHIVE_NAME -Force
+          # 実行ファイルのみをコピー（.exe, .dist, .buildなどのディレクトリは除外）
+          Get-ChildItem -Path dist -File | Copy-Item -Destination $ARCHIVE_NAME
+          Copy-Item -Path config.py -Destination $ARCHIVE_NAME/
+          Compress-Archive -Path "$ARCHIVE_NAME/*" -DestinationPath "${ARCHIVE_NAME}.zip"
+          Get-ChildItem -Path $ARCHIVE_NAME
+          Remove-Item -Recurse -Force $ARCHIVE_NAME
 
       - name: archive with tar.gz
         if: ${{ matrix.archive == 'tar.gz' }}
         run: |
           ARCHIVE_NAME="twitchTransFN_${{ steps.get_version.outputs.version }}_${{ matrix.env }}"
-          mv dist "$ARCHIVE_NAME"
+          mkdir -p "$ARCHIVE_NAME"
+          # 実行ファイルのみをコピー（.dist, .onefile-build, .buildディレクトリは除外）
+          find dist -maxdepth 1 -type f -exec cp {} "$ARCHIVE_NAME/" \;
           cp config.py "$ARCHIVE_NAME/"
+          echo "Archive contents:"
+          ls -la "$ARCHIVE_NAME"
           tar -czvf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
-          echo "Created archive: ${ARCHIVE_NAME}.tar.gz"
-          ls -la
+          rm -rf "$ARCHIVE_NAME"
 
       - name: Debug Archive Info (Unix)
         if: runner.os != 'Windows'
