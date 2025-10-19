@@ -8,8 +8,9 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.13'
+version = '2.7.14'
 '''
+v2.7.14 : - Nuitkaビルドオプション最適化：--jobs=1, --lto=noをmacOS専用に（Windows/Linuxのビルド時間改善）（@sayonari）
 v2.7.13 : - is_frozen判定を一時ディレクトリチェックに変更（Nuitka onefile完全対応）（@sayonari）
           - EXE_DIRをsys.argv[0]ベースに変更（正しいパスを取得）（@sayonari）
 v2.7.12 : - is_frozen判定を'__compiled__' in sys.modulesに修正（Nuitka検出修正）（@sayonari）
