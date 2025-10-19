@@ -1,0 +1,33 @@
+[project]
+name = "twitchTransFreeNext"
+version = "2.7.8"
+description = "Twitch Chat Translator (CUI)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "async-google-trans-new==1.4.5",
+    "gtts==2.2.4",
+    "playsound==1.2.2",
+    "deepl-translate==1.2.0",
+    "twitchio==2.3.0",
+    "emoji==2.2.0",
+    "pywin32; platform_system == 'Windows'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "nuitka>=2.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["twitchTransFN", "config", "database_controller", "tts", "sound", "build"]
+
+[tool.uv]
+dev-dependencies = [
+    "nuitka>=2.0.0",
+    "ordered-set>=4.1.0",
+]

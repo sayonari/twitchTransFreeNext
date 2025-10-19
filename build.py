@@ -21,43 +21,69 @@ def get_version():
             print(f"Error reading file with shift-jis encoding: {e}")
     except Exception as e:
         print(f"Error reading file: {e}")
-    
+
     # バージョン情報が取得できない場合は、環境変数から取得を試みる
     import os
     if "VERSION" in os.environ:
         return os.environ["VERSION"]
-    
+
     return "unknown"
 
-def build_for_os(os_name, arch, add_data_option):
+def build_for_os(os_name, arch):
     version = get_version()
-    print(f"Building for {os_name} ({arch})...")
-    
+    print(f"Building for {os_name} ({arch}) with Nuitka...")
+
     # distフォルダを削除
     if os.path.exists("dist"):
         shutil.rmtree("dist")
-    
-    # build
-    command = [
-        "pyinstaller",
-        "--onefile",
-        "--icon=icon.ico",  # アイコン設定を追加
-        "--runtime-tmpdir=.", # runtime-tmpdirを追加
-        add_data_option,
-        "twitchTransFN.py"
-    ]
-    subprocess.run(command, check=True)
 
-    # ファイル名の変更
+    # 共通のNuitkaオプション
+    base_command = [
+        "python", "-m", "nuitka",
+        "--standalone",
+        "--onefile",
+        "--assume-yes-for-downloads",
+        "--include-data-file=cacert.pem=cacert.pem",
+    ]
+
+    # OS別の設定
     if os_name == "windows":
-        os.rename("dist/twitchTransFN.exe", f"dist/twitchTransFN_{version}_win.exe")
+        base_command.extend([
+            "--windows-console-mode=force",
+            "--windows-icon-from-ico=icon.ico",
+            "--output-filename=twitchTransFN.exe",
+        ])
+        output_file = "twitchTransFN.exe"
+        final_name = f"twitchTransFN_{version}_win.exe"
     elif os_name == "linux":
-        os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_linux")
+        base_command.extend([
+            "--output-filename=twitchTransFN",
+        ])
+        output_file = "twitchTransFN"
+        final_name = f"twitchTransFN_{version}_linux"
     elif os_name == "macos":
+        base_command.extend([
+            "--output-filename=twitchTransFN.command",
+        ])
+        output_file = "twitchTransFN.command"
         if arch == "arm64":
-            os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_macos_M1.command")
+            final_name = f"twitchTransFN_{version}_macos_M1.command"
         elif arch == "x86_64":
-            os.rename("dist/twitchTransFN", f"dist/twitchTransFN_{version}_macos_Intel.command")
+            final_name = f"twitchTransFN_{version}_macos_Intel.command"
+
+    # メインスクリプトを追加
+    base_command.append("twitchTransFN.py")
+
+    # ビルド実行
+    subprocess.run(base_command, check=True)
+
+    # distフォルダを作成
+    if not os.path.exists("dist"):
+        os.makedirs("dist")
+
+    # ファイル名の変更と移動
+    if os.path.exists(output_file):
+        shutil.move(output_file, f"dist/{final_name}")
 
     print(f"Build for {os_name} ({arch}) completed.")
 
@@ -73,22 +99,15 @@ def main(target_os):
             print(f"Failed to download cacert.pem: {e}")
             return
 
-    # distフォルダの準備
-    if not os.path.exists("dist"):
-        os.makedirs("dist")
-
     # 各OS向けにビルド
     if target_os == "windows":
-        build_for_os("windows", "", "--add-data=cacert.pem;.")
+        build_for_os("windows", "")
     elif target_os == "linux":
-        build_for_os("linux", "", "--add-data=cacert.pem:.")
-    elif target_os == "macos_M1" or target_os == "macos_Intel":
-        # macOSの場合は区切り文字がコロン
-        add_data_option = "--add-data=cacert.pem:."
-        if target_os == "macos_M1":
-            build_for_os("macos", "arm64", add_data_option)
-        else:
-            build_for_os("macos", "x86_64", add_data_option)
+        build_for_os("linux", "")
+    elif target_os == "macos_M1":
+        build_for_os("macos", "arm64")
+    elif target_os == "macos_Intel":
+        build_for_os("macos", "x86_64")
 
     print("Build process completed.")
 

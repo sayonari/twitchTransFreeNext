@@ -8,8 +8,10 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.6'
+version = '2.7.8'
 '''
+v2.7.8  : - uvパッケージマネージャーへの移行（@sayonari）
+          - GitHub Actions改善（ビルド高速化）（@sayonari）
 v2.7.6  : - SSLエラーにならないように，cacert.pemを同梱（@sayonari）
 v2.7.5  : - deepl翻訳が429(要求過多)エラーなので，標準翻訳設定をgoogleにした（とりあえず）（@sayonari）
           - 翻訳結果がない時投稿しないように変更（@sayonari）
