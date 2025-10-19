@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from async_google_trans_new import AsyncTranslator, constant
@@ -480,18 +480,18 @@ class Bot(commands.Bot):
                         translatedText = (
                             await asyncio.gather(asyncio.to_thread(deepl.translate, source_language= deepl_lang_dict[lang_detect], target_language=deepl_lang_dict[lang_dest], text=in_text))
                             )[0]
-                        if config.Debug: print(f'[DeepL Tlanslate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
+                        if config.Debug: print(f'[DeepL Translate]({deepl_lang_dict[lang_detect]} > {deepl_lang_dict[lang_dest]})')
                     else:
                         if not config.GAS_URL:
                             try:
                                 translatedText = await translator.translate(in_text, lang_dest)
-                                if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                                if config.Debug: print('[Google Translate (google_trans_new)]')
                             except Exception as e:
                                 if config.Debug: print(e)
                         else:
                             try:
                                 translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
-                                if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+                                if config.Debug: print('[Google Translate (Google Apps Script)]')
                             except Exception as e:
                                 if config.Debug: print(e)
                 except Exception as e:
@@ -503,7 +503,7 @@ class Bot(commands.Bot):
                 if not config.GAS_URL:
                     try:
                         translatedText = await translator.translate(in_text, lang_dest)
-                        if config.Debug: print('[Google Tlanslate (google_trans_new)]')
+                        if config.Debug: print('[Google Translate (google_trans_new)]')
                     except Exception as e:
                         if config.Debug: print(e)
 
@@ -511,7 +511,7 @@ class Bot(commands.Bot):
                 else:
                     try:
                         translatedText = await GAS_Trans(self._http.session, in_text, '', lang_dest)
-                        if config.Debug: print('[Google Tlanslate (Google Apps Script)]')
+                        if config.Debug: print('[Google Translate (Google Apps Script)]')
                     except Exception as e:
                         if config.Debug: print(e)
 
