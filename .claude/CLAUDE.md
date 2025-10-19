@@ -2,6 +2,31 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ 重要な警告 - 絶対に守ること
+
+### Gitタグの命名規則【厳守】
+
+**このプロジェクトのGitタグは必ず先頭に"v"を付けること**
+
+- ✅ 正しい例: `v2.7.13`, `v2.7.14`, `v3.0.0`
+- ❌ 間違い例: `2.7.13`, `2.7.14`, `3.0.0`
+
+**理由**: GitHub Actionsのワークフローは`tags: ['v*']`のパターンでトリガーされます。"v"プレフィックスがない場合、自動ビルドが実行されません。
+
+**タグ作成時の正しいコマンド**:
+```bash
+git tag v2.7.13              # ✅ 正しい
+git push origin v2.7.13      # ✅ 正しい
+```
+
+**間違ったタグを作成した場合の修正手順**:
+```bash
+git tag -d 2.7.13                    # ローカルタグを削除
+git push origin :refs/tags/2.7.13    # リモートタグを削除
+git tag v2.7.13                      # 正しいタグを作成
+git push origin v2.7.13              # 正しいタグをプッシュ
+```
+
 ## プロジェクト概要
 
 twitchTransFreeNextは、Twitchチャットのメッセージを自動的に翻訳するボットです。Twitch IRCに接続し、リアルタイムで複数言語間の翻訳を実行します。
