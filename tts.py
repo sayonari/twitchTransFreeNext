@@ -9,6 +9,7 @@ import queue
 import threading
 import platform
 import sys
+import config
 
 # Check if we're on macOS
 is_macos = platform.system() == 'Darwin'
@@ -22,10 +23,11 @@ is_frozen = (
 )
 
 # デバッグ出力
-print(f"[TTS DEBUG] is_macos: {is_macos}")
-print(f"[TTS DEBUG] is_frozen: {is_frozen}")
-print(f"[TTS DEBUG] sys.executable: {sys.executable}")
-print(f"[TTS DEBUG] Temp dir check: {'/tmp/' in exe_path or '/var/folders/' in exe_path}")
+if config.Debug:
+    print(f"[TTS DEBUG] is_macos: {is_macos}")
+    print(f"[TTS DEBUG] is_frozen: {is_frozen}")
+    print(f"[TTS DEBUG] sys.executable: {sys.executable}")
+    print(f"[TTS DEBUG] Temp dir check: {'/tmp/' in exe_path or '/var/folders/' in exe_path}")
 
 # macOS かつ バイナリ実行時は、playsoundを使わずafplayを直接使用
 if is_macos and is_frozen:
