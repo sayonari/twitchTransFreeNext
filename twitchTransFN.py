@@ -8,8 +8,10 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.9'
+version = '2.7.10'
 '''
+v2.7.10 : - tmpディレクトリの相対パス問題を完全に修正（@sayonari）
+          - TMP_DIRとSOUND_DIRを明示的にTTS/Soundクラスに渡すように変更（@sayonari）
 v2.7.9  : - tmpディレクトリとデータベースを実行ファイルのディレクトリに生成するように修正（@sayonari）
           - macOS Nuitkaバイナリでの音声再生問題を修正（afplay直接使用）（@sayonari）
 v2.7.8  : - uvパッケージマネージャーへの移行（@sayonari）
@@ -73,6 +75,7 @@ else:
 
 # configure for Google TTS & play
 TMP_DIR = os.path.join(EXE_DIR, 'tmp')
+SOUND_DIR = os.path.join(EXE_DIR, 'sound')
 
 # translate.googleのサフィックスリスト
 URL_SUFFIX_LIST = [re.search('translate.google.(.*)', url.strip()).group(1) for url in constant.DEFAULT_SERVICE_URLS]
@@ -140,8 +143,8 @@ else:
     url_suffix = 'co.jp'
 
 translator = AsyncTranslator(url_suffix=url_suffix)
-tts = tts.TTS(config)
-sound = sound.Sound(config)
+tts = tts.TTS(config, TMP_DIR)
+sound = sound.Sound(config, SOUND_DIR)
 
 ##########################################
 # cacert.pem の場所を特定

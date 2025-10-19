@@ -47,8 +47,9 @@ class TTS:
     必要な加工を施した上で適切なタイミングで読み上げる
     """
 
-    def __init__(self, config):
+    def __init__(self, config, tmp_dir='./tmp'):
         self.config = config
+        self.tmp_dir = tmp_dir
         self.synth_queue = queue.Queue()
 
     def put(self, text, lang):
@@ -109,7 +110,7 @@ class TTS:
     def gTTS_play(self, text, tl):
         try:
             tts = gTTS(text, lang=tl)
-            tts_file = './tmp/cnt_{}.mp3'.format(datetime.now().microsecond)
+            tts_file = os.path.join(self.tmp_dir, 'cnt_{}.mp3'.format(datetime.now().microsecond))
             if self.config.Debug: print('gTTS file: {}'.format(tts_file))
             tts.save(tts_file)
             

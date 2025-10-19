@@ -39,8 +39,9 @@ else:
         import_error = e
 
 class Sound:
-    def __init__(self, config):
+    def __init__(self, config, sound_dir='./sound'):
         self.config = config
+        self.sound_dir = sound_dir
         self.sound_queue = queue.Queue()
 
     def run(self):
@@ -66,7 +67,8 @@ class Sound:
                 time.sleep(1)
             else:
                 try:
-                    playsound('./sound/{}.mp3'.format(q), True)
+                    sound_file = os.path.join(self.sound_dir, '{}.mp3'.format(q))
+                    playsound(sound_file, True)
                 except Exception as e:
                     print('sound error: [!sound] command can not play sound...')
                     if self.config.Debug: print(e.args)
