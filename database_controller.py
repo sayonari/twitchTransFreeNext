@@ -4,12 +4,20 @@ ja : すべてのコメントはDeepLを使用して翻訳されました。
 
 '''
 
-import os, sqlite3, asyncio
+import os, sqlite3, asyncio, sys
 
 db_name = 'database.db'					# en:Filename of database		ja:データベースのファイル名
 table_name = 'translations'
-cwd = os.getcwd()						# en:Current Working Directory 	ja:現在の作業フォルダ
-db_file = os.path.join(cwd,db_name)		# en:Database File				ja:データベース・ファイル
+
+# 実行ファイルのディレクトリを取得（Nuitka/PyInstaller対応）
+if getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__'):
+    # Nuitkaまたはその他のバイナリ実行時
+    exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+else:
+    # 通常のPythonスクリプト実行時
+    exe_dir = os.path.dirname(os.path.abspath(__file__))
+
+db_file = os.path.join(exe_dir, db_name)		# en:Database File				ja:データベース・ファイル
 
 try:									# en:Create the database File	ja:データベース・ファイルの作成
 	with open(db_file, "x") as fp:		# "x" = en:"Create file"		ja:「ファイル作成」

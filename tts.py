@@ -13,34 +13,32 @@ import sys
 # Check if we're on macOS
 is_macos = platform.system() == 'Darwin'
 
-# Import playsound with appropriate handling for macOS
-try:
-    from playsound import playsound
-    playsound_available = True
-except ImportError as e:
-    playsound_available = False
-    import_error = e
+# Nuitka/PyInstallerバイナリ実行時の検出
+is_frozen = getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__')
 
-# For macOS, try to import AppKit if needed
-if is_macos:
+# macOS かつ バイナリ実行時は、playsoundを使わずafplayを直接使用
+if is_macos and is_frozen:
+    # afplayを使用するカスタム実装
+    def playsound(sound_file, block=True):
+        if not os.path.exists(sound_file):
+            print(f"Sound file not found: {sound_file}")
+            return
+
+        cmd = f"afplay '{sound_file}'"
+        if block:
+            os.system(cmd)
+        else:
+            threading.Thread(target=os.system, args=(cmd,)).start()
+
+    playsound_available = True
+else:
+    # 通常のPython実行時、またはmacOS以外の環境
     try:
-        import AppKit
-    except ImportError:
-        # If we're in a PyInstaller bundle on macOS
-        if getattr(sys, 'frozen', False):
-            # Try to use afplay command line tool instead
-            def playsound(sound_file, block=True):
-                if not os.path.exists(sound_file):
-                    print(f"Sound file not found: {sound_file}")
-                    return
-                
-                cmd = f"afplay {sound_file}"
-                if block:
-                    os.system(cmd)
-                else:
-                    threading.Thread(target=os.system, args=(cmd,)).start()
-            
-            playsound_available = True
+        from playsound import playsound
+        playsound_available = True
+    except ImportError as e:
+        playsound_available = False
+        import_error = e
 
 class TTS:
     """

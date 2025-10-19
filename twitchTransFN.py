@@ -8,8 +8,10 @@ from emoji import distinct_emoji_list
 import json, os, shutil, re, asyncio, deepl, sys, signal, tts, sound
 import database_controller as db # ja:既訳語データベース   en:Translation Database
 
-version = '2.7.8'
+version = '2.7.9'
 '''
+v2.7.9  : - tmpディレクトリとデータベースを実行ファイルのディレクトリに生成するように修正（@sayonari）
+          - macOS Nuitkaバイナリでの音声再生問題を修正（afplay直接使用）（@sayonari）
 v2.7.8  : - uvパッケージマネージャーへの移行（@sayonari）
           - GitHub Actions改善（ビルド高速化）（@sayonari）
 v2.7.6  : - SSLエラーにならないように，cacert.pemを同梱（@sayonari）
@@ -61,8 +63,16 @@ wakeup_message = f'TwitchTransFreeNext v.{version}, by さぁたん @saatan_pion
 #####################################
 # 初期設定 ###########################
 
+# 実行ファイルのディレクトリを取得（Nuitka/PyInstaller対応）
+if getattr(sys, 'frozen', False) or hasattr(sys, '__compiled__'):
+    # Nuitkaまたはその他のバイナリ実行時
+    EXE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+else:
+    # 通常のPythonスクリプト実行時
+    EXE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # configure for Google TTS & play
-TMP_DIR = os.path.join(os.getcwd(), 'tmp')
+TMP_DIR = os.path.join(EXE_DIR, 'tmp')
 
 # translate.googleのサフィックスリスト
 URL_SUFFIX_LIST = [re.search('translate.google.(.*)', url.strip()).group(1) for url in constant.DEFAULT_SERVICE_URLS]
