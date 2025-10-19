@@ -69,6 +69,7 @@ def build_for_os(os_name, arch):
         "--standalone",
         "--onefile",
         "--assume-yes-for-downloads",
+        "--nofollow-import-to=config",  # config.pyをバイナリに含めない
         "--include-data-file=cacert.pem=cacert.pem",
         f"--output-dir=dist",
         f"--output-filename={output_file}",
